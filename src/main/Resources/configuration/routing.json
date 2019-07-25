@@ -1,0 +1,13 @@
+[
+    {
+        "name": "MyRouteName",
+        "regexp": "^/articles/([0-9]+)(-[^/]+)/?",
+        "pretty": "/articles/$1$2",
+        "controller": "Article",
+        "action": "default",
+        "variables": {
+            "id": "$1",
+            "prettyKey": "$2"
+        }
+    }
+]

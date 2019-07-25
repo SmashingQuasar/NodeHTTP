@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		"outDir": "build",
+		"allowJs": false,
+		"target": "es2018",
+		"lib": ["dom", "es5", "es6", "es7"],
+		"alwaysStrict": true,
+		"removeComments": true,
+		"strict": true,
+		"charset": "UTF-8",
+		"noImplicitAny": true,
+		"noImplicitReturns": true,
+		"noImplicitThis": true,
+		"strictNullChecks": true,
+		"moduleResolution": "node",
+		"module": "commonjs",
+		"strictFunctionTypes": true,
+		"allowUnusedLabels": false,
+		"allowUnreachableCode": false,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"newLine": "LF",
+	},
+	"include": [
+		"./"
+	]
+}
