@@ -44,7 +44,12 @@ module Model
                     }
                     catch (e)
                     {
-                        console.log(e);
+                        //TODO Log general errors here
+
+                        console.log("Custom error:", e);
+
+                        response.statusCode = 404;
+                        response.end("404 - Not found.");
                     }
                 }
             );

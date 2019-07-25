@@ -21,7 +21,9 @@ var Model;
                     await this.dispatchRequest(request, response);
                 }
                 catch (e) {
-                    console.log(e);
+                    console.log("Custom error:", e);
+                    response.statusCode = 404;
+                    response.end("404 - Not found.");
                 }
             });
         }
