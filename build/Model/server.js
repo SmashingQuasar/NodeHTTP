@@ -17,7 +17,12 @@ var Model;
             });
             message.addListener("end", async () => {
                 await request.setRawBody(body);
-                this.dispatchRequest(request, response);
+                try {
+                    await this.dispatchRequest(request, response);
+                }
+                catch (e) {
+                    console.log(e);
+                }
             });
         }
         start() {
@@ -27,12 +32,14 @@ var Model;
             const ROUTER = new Routing_1.Routing();
             await ROUTER.loadRoutingFile();
             const ROUTES = ROUTER.getRoutes();
-            ROUTES.forEach(async (route) => {
+            let controller_name;
+            let action_name;
+            await Promise.all(ROUTES.map(async (route) => {
                 const MATCHES = request.getRequestedPath().match(route.regexp);
                 if (MATCHES !== null) {
                     const QUERY = {};
                     const KEYS = Object.keys(route.variables);
-                    KEYS.forEach((name) => {
+                    await Promise.all(KEYS.map((name) => {
                         const VARIABLE_REFERENCE = route.variables[name];
                         if (VARIABLE_REFERENCE.match(/^\$[0-9]+$/) === null) {
                         }
@@ -40,30 +47,47 @@ var Model;
                         if (MATCHES[INDEX] === undefined || MATCHES[INDEX] === null) {
                         }
                         QUERY[name] = MATCHES[INDEX];
-                    });
+                    }));
                     request.setQuery(QUERY);
-                    const CONTROLLER_NAME = `${route.controller}Controller`;
-                    const ACTION_NAME = `${route.action}Action`;
-                    try {
-                        const FILE_STATS = await fs_1.promises.stat(`${__dirname}/../Controller/${CONTROLLER_NAME}.js`);
-                        if (!FILE_STATS.isFile()) {
-                            throw new Error("The requested controller is not a file.");
-                        }
-                        const REQUESTED_CONTROLLER_CLASS = require(`${__dirname}/../Controller/${CONTROLLER_NAME}.js`);
-                        if (REQUESTED_CONTROLLER_CLASS.hasOwnProperty(CONTROLLER_NAME)) {
-                            const REQUESTED_CONTROLLER = new REQUESTED_CONTROLLER_CLASS[CONTROLLER_NAME];
-                            if (REQUESTED_CONTROLLER[ACTION_NAME] !== undefined && REQUESTED_CONTROLLER[ACTION_NAME] instanceof Function) {
-                                await REQUESTED_CONTROLLER[ACTION_NAME](request, response);
-                            }
-                            else {
-                            }
-                        }
+                    controller_name = `${route.controller}Controller`;
+                    action_name = `${route.action}Action`;
+                }
+            }));
+            if (controller_name === undefined || action_name === undefined) {
+                const PUBLIC_PATH = `${__dirname}/../../www`;
+                try {
+                    const POSSIBLE_FILE = await fs_1.promises.stat(`${PUBLIC_PATH}/${request.getRequestedPath()}`);
+                    if (!POSSIBLE_FILE.isFile()) {
+                        throw new Error("Requested file does not exist");
                     }
-                    catch (e) {
-                        console.log(e);
+                    const FILE = await fs_1.promises.readFile(`${PUBLIC_PATH}/${request.getRequestedPath()}`);
+                    response.write(FILE);
+                    response.end();
+                }
+                catch (e) {
+                    throw new Error("Requested file does not exist");
+                }
+            }
+            else {
+                try {
+                    const FILE_STATS = await fs_1.promises.stat(`${__dirname}/../Controller/${controller_name}.js`);
+                    if (!FILE_STATS.isFile()) {
+                        throw new Error("The requested controller is not a file.");
+                    }
+                    const REQUESTED_CONTROLLER_CLASS = require(`${__dirname}/../Controller/${controller_name}.js`);
+                    if (REQUESTED_CONTROLLER_CLASS.hasOwnProperty(controller_name)) {
+                        const REQUESTED_CONTROLLER = new REQUESTED_CONTROLLER_CLASS[controller_name];
+                        if (REQUESTED_CONTROLLER[action_name] !== undefined && REQUESTED_CONTROLLER[action_name] instanceof Function) {
+                            await REQUESTED_CONTROLLER[action_name](request, response);
+                        }
+                        else {
+                        }
                     }
                 }
-            });
+                catch (e) {
+                    console.log(e);
+                }
+            }
         }
     }
     Model.Server = Server;
