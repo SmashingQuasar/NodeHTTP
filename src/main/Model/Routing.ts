@@ -38,10 +38,9 @@ module Model
 
                 const RAW_CONFIGURATION: string|Buffer = await FileSystem.readFile(path, { encoding: "utf-8" });
 
-                if (typeof RAW_CONFIGURATION === "string")
+                if (typeof RAW_CONFIGURATION !== "string")
                 {
                     //TODO Log here
-
                     throw new Error("TODO: Handle the case where a file returns a Buffer and not a string in Routing.ts.");
                 }
 
