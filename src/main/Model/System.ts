@@ -1,12 +1,49 @@
 // import { Request } from "./Request";
 // import { IncomingMessage } from "http";
+import { Server } from "./Server.js";
+import { promises as Reader } from "fs";
+import { ServerOptions } from "https";
+const WebSocket = require("ws");
 
-module Model
+class System
 {
-    export class System
+    /**
+     * start
+     */
+    public async start()
     {
 
     }
+
+    /**
+     * startHTTPServer
+     */
+    public async startHTTPServer(configuration: HTTPServerConfiguration): Promise<void>
+    {
+        const OPTIONS: ServerOptions = {};
+
+        if (configuration.key !== undefined && configuration.certificate != undefined)
+        {
+            const KEY: Buffer = await Reader.readFile(`${__dirname}/Resources/privateKey.key`);
+            const CERTIFICATE: Buffer = await Reader.readFile(`${__dirname}/Resources/certificate.crt`);
+                
+            OPTIONS.key = KEY;
+            OPTIONS.cert = CERTIFICATE;
+        }
+        
+        const SERVER = new Server(OPTIONS, undefined);
+        SERVER.addListener("request", SERVER.handleRequest);
+    
+        SERVER.start();    
+    }
+
+    /**
+     * openWebSocket
+     */
+    public async openWebSocket(): Promise<void>
+    {
+        
+    }
 }
 
-export = Model;
+export { System };

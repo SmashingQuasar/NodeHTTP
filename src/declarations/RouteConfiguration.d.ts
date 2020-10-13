@@ -1,4 +1,5 @@
-declare type RouteConfiguration = {
+declare interface RouteConfiguration
+{
     name: string;
     regexp: RegExp;
     pretty: string;
@@ -7,4 +8,4 @@ declare type RouteConfiguration = {
     variables: {
         [key: string]: string;
     }
-};
+}

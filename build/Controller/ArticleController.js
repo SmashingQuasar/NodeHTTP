@@ -1,5 +1,7 @@
 "use strict";
 const Controller_1 = require("../Model/Controller");
+const Templating_1 = require("../Model/Templating");
+const zlib = require('zlib');
 var Model;
 (function (Model) {
     class ArticleController extends Controller_1.Controller {
@@ -15,9 +17,15 @@ var Model;
             await Promise.all(variables_names.map((name) => {
                 message += `<br />${name}: ${request.getQuery()[name]}`;
             }));
+            console.log(message);
+            const TEMPLATING = new Templating_1.Templating();
+            let content = await TEMPLATING.render(`index.html`, { title: "Hello world from templating!" });
             response.setHeader("Content-Type", "text/html");
-            response.write(message);
-            response.end();
+            response.setHeader("Content-Encoding", "gzip");
+            const encoder = zlib.createGzip();
+            encoder.pipe(response);
+            encoder.write(content);
+            encoder.end();
         }
     }
     Model.ArticleController = ArticleController;

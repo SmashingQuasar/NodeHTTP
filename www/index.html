@@ -1,18 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="/css/style.css" type="text/css" />
-    <title>Document</title>
-</head>
-<body>
-    <form action="https://127.0.0.1" method="POST" enctype="multipart/form-data">
-        <input type="text" name="foo" />
-        <input type="file" name="myFile" />
-        <input type="file" name="myFile2" />
-        <button type="submit">Send</button>
-    </form>
-</body>
-</html>
+{{layout: layouts/default.html}}
+{{include: partials/title.html}}
+<ul>
+    
+    {{for: let i = 0; i < 10; ++i}}
+
+        {{for: let j = 0; j < 5; ++j}}
+
+            {{if: i % 2 === 0}}
+
+                <li>Even number {{i}}</li>
+
+            {{else if: i % 3 === 0}}
+
+                <li>Can be divided by 3 : {{i}}</li>
+
+            {{else}}
+
+                <li>Other {{i}}</li>
+
+            {{endif}}
+
+        {{endfor}}
+
+    {{endfor}}
+
+</ul>
