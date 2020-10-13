@@ -1,4 +1,4 @@
-import { Server } from "./Model/Server";
+import { Server } from "./Model/Server.js";
 import { promises as Reader } from "fs";
 
 async function initialize()

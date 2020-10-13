@@ -16,8 +16,8 @@ var Model;
                 if (!FILE_STATS.isFile()) {
                     throw new Error("Provided path for routing configuration file does not link to a file.");
                 }
-                const RAW_CONFIGURATION = await fs_1.promises.readFile(path, { encoding: "UTF-8" });
-                if (RAW_CONFIGURATION instanceof Buffer) {
+                const RAW_CONFIGURATION = await fs_1.promises.readFile(path, { encoding: "utf-8" });
+                if (typeof RAW_CONFIGURATION === "string") {
                     throw new Error("TODO: Handle the case where a file returns a Buffer and not a string in Routing.ts.");
                 }
                 const PARSED_CONFIGURATION = JSON.parse(RAW_CONFIGURATION);
