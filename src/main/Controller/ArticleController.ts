@@ -1,8 +1,8 @@
-import { Controller } from "../Model/Controller";
-import { Request } from "../Model/Request";
+import { Controller } from "../Model/Controller.js";
+import { Request } from "../Model/Request.js";
 import { ServerResponse } from "http";
-import { Templating } from "../Model/Templating";
-const zlib = require('zlib');
+import { Templating } from "../Model/Templating.js";
+import { createGzip } from "zlib";
 
 class ArticleController extends Controller
 {
@@ -42,7 +42,7 @@ class ArticleController extends Controller
         response.setHeader("Content-Type", "text/html");
         response.setHeader("Content-Encoding", "gzip");
 
-        const encoder = zlib.createGzip();
+        const encoder = createGzip();
         encoder.pipe(response);
         encoder.write(content);
         encoder.end();

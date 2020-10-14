@@ -1,7 +1,7 @@
 [
     {
         "name": "MyRouteName",
-        "regexp": "^/articles/([0-9]+)(-[^/]+)/?",
+        "regexp": "^/articles/([0-9]+)-([^/]+)/?",
         "pretty": "/articles/$1$2",
         "controller": "Article",
         "action": "default",

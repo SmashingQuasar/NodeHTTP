@@ -3,7 +3,6 @@
 import { Server } from "./Server.js";
 import { promises as Reader } from "fs";
 import { ServerOptions } from "https";
-const WebSocket = require("ws");
 
 class System
 {
@@ -21,11 +20,13 @@ class System
     public async startHTTPServer(configuration: HTTPServerConfiguration): Promise<void>
     {
         const OPTIONS: ServerOptions = {};
+        // const __DIRNAME__ = import.meta.url.replace(/^file:\/\/(.*)\/[^\/]+$/, "$1");
+        const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
 
         if (configuration.key !== undefined && configuration.certificate != undefined)
         {
-            const KEY: Buffer = await Reader.readFile(`${__dirname}/Resources/privateKey.key`);
-            const CERTIFICATE: Buffer = await Reader.readFile(`${__dirname}/Resources/certificate.crt`);
+            const KEY: Buffer = await Reader.readFile(`${__DIRNAME__}/Resources/privateKey.key`);
+            const CERTIFICATE: Buffer = await Reader.readFile(`${__DIRNAME__}/Resources/certificate.crt`);
                 
             OPTIONS.key = KEY;
             OPTIONS.cert = CERTIFICATE;

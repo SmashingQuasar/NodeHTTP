@@ -1,7 +1,7 @@
 import { IncomingMessage, ServerResponse, RequestListener } from "http";
 import { Server as HTTPSServer, ServerOptions } from "https";
-import { Request } from "./Request";
-import { Routing } from "./Routing";
+import { Request } from "./Request.js";
+import { Routing } from "./Routing.js";
 import { ParsedUrlQuery } from "querystring";
 import { promises as FileSystem, Stats } from "fs";
 // import { Controller } from "./Controller";
@@ -66,6 +66,8 @@ class Server extends HTTPSServer
 
     private async dispatchRequest(request: Request, response: ServerResponse): Promise<void>
     {
+        // const __DIRNAME__ = import.meta.url.replace(/^file:\/\/(.*)\/[^\/]+$/, "$1");
+        const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
         const ROUTER: Routing = new Routing();
 
         await ROUTER.loadRoutingFile();
@@ -117,7 +119,7 @@ class Server extends HTTPSServer
         
         if (controller_name === undefined || action_name === undefined)
         {
-            const PUBLIC_PATH: string = `${__dirname}/../../www`;
+            const PUBLIC_PATH: string = `${__DIRNAME__}/../../../www`;
             
             try
             {
@@ -142,7 +144,8 @@ class Server extends HTTPSServer
         {
             try
             {
-                const FILE_STATS: Stats = await FileSystem.stat(`${__dirname}/../Controller/${controller_name}.js`);
+                const CLASS_PATH: string = `${__DIRNAME__}/../Controller/${controller_name}.js`;
+                const FILE_STATS: Stats = await FileSystem.stat(CLASS_PATH);
 
                 if (!FILE_STATS.isFile())
                 {
@@ -150,21 +153,17 @@ class Server extends HTTPSServer
                     throw new Error("The requested controller is not a file.");
                 }
 
-                const REQUESTED_CONTROLLER_CLASS = require(`${__dirname}/../Controller/${controller_name}.js`);
+                const REQUESTED_CONTROLLER_CLASS = await import(CLASS_PATH);
                 
-                if (REQUESTED_CONTROLLER_CLASS.hasOwnProperty(controller_name))
+                const REQUESTED_CONTROLLER = new REQUESTED_CONTROLLER_CLASS[controller_name];
+                
+                if (REQUESTED_CONTROLLER[action_name] !== undefined && REQUESTED_CONTROLLER[action_name] instanceof Function)
                 {
-                    const REQUESTED_CONTROLLER = new REQUESTED_CONTROLLER_CLASS[controller_name];
-                    
-                    if (REQUESTED_CONTROLLER[action_name] !== undefined && REQUESTED_CONTROLLER[action_name] instanceof Function)
-                    {
-                        await REQUESTED_CONTROLLER[action_name](request, response);
-                    }
-                    else
-                    {
-                        //TODO Log that controller action does not exist.
-                    }
-
+                    await REQUESTED_CONTROLLER[action_name](request, response);
+                }
+                else
+                {
+                    //TODO Log that controller action does not exist.
                 }
 
             }

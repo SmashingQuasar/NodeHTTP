@@ -1,13 +1,12 @@
 import { promises as FileSystem, Stats } from "fs";
-import { Templating } from "./Templating";
-import { isString } from "util";
+import { Templating } from "./Templating.js";
 
 class View
 {
     protected layout: string|null = null;
     protected content: string = "";
     protected parameters: any;
-    protected publicDirectory: string = `${__dirname}/../../www`;
+    protected publicDirectory: string = "";
     
     /**
      * constructor
@@ -15,6 +14,8 @@ class View
     public constructor(parameters?: any)
     {
         this.parameters = parameters;
+        const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        this.publicDirectory = `${__DIRNAME__}/../../../www`;
     }
 
     /**
@@ -33,7 +34,7 @@ class View
 
             let content: Buffer|string = await FileSystem.readFile(`${this.publicDirectory}/${this.layout}`, { encoding: "UTF-8" });
 
-            if (isString(content) && content.match(/{{main}}/) !== null)
+            if (typeof content === "string" && content.match(/{{main}}/) !== null)
             {
                 content = content.replace(/{{main}}/, this.content);
                 this.content = content;

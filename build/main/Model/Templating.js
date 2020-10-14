@@ -1,19 +1,20 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Templating = void 0;
-const fs_1 = require("fs");
+import { promises as FileSystem } from "fs";
+import { basename } from "path";
 class Templating {
     constructor() {
-        this.publicDirectory = `${__dirname}/../../www`;
+        this.publicDirectory = "";
+        const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        this.publicDirectory = `${__DIRNAME__}/../../../www`;
     }
     async render(path, parameters) {
+        const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
         try {
             const FULL_PATH = `${this.publicDirectory}/${path}`;
-            const FILE_STATS = await fs_1.promises.stat(FULL_PATH);
+            const FILE_STATS = await FileSystem.stat(FULL_PATH);
             if (!FILE_STATS.isFile()) {
                 throw new Error(`Attempted to render path "${FULL_PATH}". Directory found.`);
             }
-            const FILE = await fs_1.promises.readFile(FULL_PATH);
+            const FILE = await FileSystem.readFile(FULL_PATH);
             let template = FILE.toString();
             if (parameters !== undefined) {
                 const PARAMETERS_NAMES = Object.keys(parameters);
@@ -36,9 +37,8 @@ class Templating {
             template = template.replace(/{{else}}/g, "`;\r\n}\r\nelse\r\n{\r\nthis.content += `");
             template = template.replace(/{{endif}}/g, "`;\r\n}\r\nthis.content += `");
             template = template.replace(/{{([^}]+)}}/g, "${$1}");
-            let root_directory = `${__dirname}/../../`;
-            template = `const PARENT = require("${root_directory}build/Model/View.js");
-class View extends PARENT.View
+            template = `import { View as AbstractView } from "${__DIRNAME__}/View.js";
+class View extends AbstractView
 {
     constructor(parameters)
     {
@@ -51,30 +51,30 @@ class View extends PARENT.View
         return this.content;
     }
 }
-module.exports = View;`;
-            const SAVE_DIRECTORY_MATCH = path.match(/(.*)\/[^/]+\.html$/);
-            let save_directory = "";
-            if (SAVE_DIRECTORY_MATCH !== null) {
-                save_directory = `${__dirname}/../../cache/${SAVE_DIRECTORY_MATCH[1]}`;
-            }
-            const SAVE_PATH = path.replace(/\.html$/g, "");
-            const DESTINATION_PATH = `${__dirname}/../../cache/${SAVE_PATH}.js`;
-            if (save_directory !== "") {
-                await fs_1.promises.mkdir(save_directory, { recursive: true });
-            }
-            await fs_1.promises.writeFile(DESTINATION_PATH, template);
-            const CLASS = require(DESTINATION_PATH);
-            const VIEW = new CLASS(parameters);
+export { View };`;
+            const FILENAME = basename(path);
+            console.log(FILENAME);
+            const SAVE_PATH = path.replace(new RegExp(`/?${FILENAME}`), "");
+            console.log(SAVE_PATH);
+            const DESTINATION_DIRECTORY = `${__DIRNAME__}/../../cache/${SAVE_PATH}`;
+            console.log(DESTINATION_DIRECTORY);
+            await FileSystem.mkdir(DESTINATION_DIRECTORY, { recursive: true });
+            const FULL_FILE_PATH = `${DESTINATION_DIRECTORY}/${FILENAME}.mjs`;
+            await FileSystem.writeFile(FULL_FILE_PATH, template);
+            const { View } = await import(FULL_FILE_PATH);
+            const VIEW = new View(parameters);
             await VIEW.render();
             await VIEW.build();
             const CONTENT = VIEW.getContent();
             return CONTENT;
         }
         catch (e) {
+            console.log("------------------------------------------");
             console.log(e);
             console.log(`Attempted to render path "${path}". File not found.`);
+            console.log("------------------------------------------");
             return null;
         }
     }
 }
-exports.Templating = Templating;
+export { Templating };

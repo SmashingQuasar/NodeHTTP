@@ -10,7 +10,7 @@ class Routing
      */
     public constructor()
     {
-        this.sourceFilePath = `${__dirname}/../Resources/configuration/routing.json`;
+        this.sourceFilePath = `./private/Resources/configuration/routing.json`;
     }
 
     /**

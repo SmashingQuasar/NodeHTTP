@@ -1,5 +1,5 @@
-const PARENT = require("F:\server-dev\projects\nodehttp\build\Model/../../build/Model/View.js");
-class View extends PARENT.View
+import { View as AbstractView } from "/server-dev/projects/nodehttp/build/main/Model/View.js";
+class View extends AbstractView
 {
     constructor(parameters)
     {
@@ -12,4 +12,4 @@ class View extends PARENT.View
         return this.content;
     }
 }
-module.exports = View;
+export { View };

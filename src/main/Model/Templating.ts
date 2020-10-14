@@ -1,16 +1,20 @@
 import { promises as FileSystem, Stats } from "fs";
-import { View } from "./View";
+import { View as AbstractView } from "./View.js";
+import { basename } from "path";
 
 class Templating
 {
-    protected publicDirectory: string = `${__dirname}/../../www`;
+    protected publicDirectory: string = "";
 
     /**
      * constructor
      */
     public constructor()
     {
-        
+        // const __DIRNAME__ = import.meta.url.replace(/^file:\/\/(.*)\/[^\/]+$/, "$1");
+        const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+
+        this.publicDirectory = `${__DIRNAME__}/../../../www`;
     }
 
     /**
@@ -18,6 +22,8 @@ class Templating
      */
     public async render(path: string, parameters?: QueryParameter): Promise<string|null>
     {
+        // const __DIRNAME__ = import.meta.url.replace(/^file:\/\/(.*)\/[^\/]+$/, "$1");
+        const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
         try
         {
             const FULL_PATH: string = `${this.publicDirectory}/${path}`;
@@ -42,7 +48,7 @@ class Templating
                     template = template.replace(REGEXP, `\${parameter}`);
                 }
             }
-
+            
             /* Layout */
 
             const LAYOUT: RegExpMatchArray|null = template.match(/{{layout: *([^}]+)}}/);
@@ -73,10 +79,8 @@ class Templating
             template = template.replace(/{{endif}}/g, "`;\r\n}\r\nthis.content += `");
             template = template.replace(/{{([^}]+)}}/g, "${$1}");
 
-            let root_directory: string = `${__dirname}/../../`;
-
-            template = `const PARENT = require("${root_directory}build/Model/View.js");
-class View extends PARENT.View
+            template = `import { View as AbstractView } from "${__DIRNAME__}/View.js";
+class View extends AbstractView
 {
     constructor(parameters)
     {
@@ -89,28 +93,40 @@ class View extends PARENT.View
         return this.content;
     }
 }
-module.exports = View;`;
+export { View };`;
 
-            const SAVE_DIRECTORY_MATCH: RegExpMatchArray|null = path.match(/(.*)\/[^/]+\.html$/)
-            let save_directory: string = "";
+            // const SAVE_DIRECTORY_MATCH: RegExpMatchArray|null = path.match(/(.*)\/[^/]+\.html$/)
+            // let save_directory: string = "";
+            // console.log(SAVE_DIRECTORY_MATCH);
 
-            if (SAVE_DIRECTORY_MATCH !== null)
-            {
-                save_directory = `${__dirname}/../../cache/${SAVE_DIRECTORY_MATCH[1]}`;
-            }
-            const SAVE_PATH: string = path.replace(/\.html$/g, "");
+            // if (SAVE_DIRECTORY_MATCH !== null)
+            // {
+            //     save_directory = `${__DIRNAME__}/../../cache/${SAVE_DIRECTORY_MATCH[1]}`;
+            // }
+            // else
+            // {
+            //     save_directory = `${__DIRNAME__}/../../cache`;
+            // }
 
-            const DESTINATION_PATH: string = `${__dirname}/../../cache/${SAVE_PATH}.js`;
+            const FILENAME: string = basename(path);
 
-            if (save_directory !== "")
-            {
-                await FileSystem.mkdir(save_directory, { recursive: true });
-            }
+            console.log(FILENAME);
+            
+            const SAVE_PATH: string = path.replace(new RegExp(`/?${FILENAME}`), "");
 
-            await FileSystem.writeFile(DESTINATION_PATH, template);
+            console.log(SAVE_PATH);
 
-            const CLASS = require(DESTINATION_PATH);
-            const VIEW: View = new CLASS(parameters);
+            const DESTINATION_DIRECTORY: string = `${__DIRNAME__}/../../cache/${SAVE_PATH}`;
+            console.log(DESTINATION_DIRECTORY);
+
+            await FileSystem.mkdir(DESTINATION_DIRECTORY, { recursive: true });
+
+            const FULL_FILE_PATH: string = `${DESTINATION_DIRECTORY}/${FILENAME}.mjs`;
+
+            await FileSystem.writeFile(FULL_FILE_PATH, template);
+
+            const { View } = await import(FULL_FILE_PATH);
+            const VIEW: AbstractView = new View(parameters);
             await VIEW.render();
             await VIEW.build();
             const CONTENT: string = VIEW.getContent();
@@ -119,8 +135,10 @@ module.exports = View;`;
         }
         catch (e)
         {
+            console.log("------------------------------------------");
             console.log(e);
             console.log(`Attempted to render path "${path}". File not found.`);
+            console.log("------------------------------------------");
             //TODO Log file not found error here
             return null;
         }
