@@ -1,9 +1,15 @@
 import { Server } from "./Model/Server.js";
 import { promises as Reader } from "fs";
+import { type as OSType } from "os";
 async function initialize() {
-    const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
-    console.log(__DIRNAME__);
-    console.log("----------------");
+    let dirname = "";
+    if (OSType() === "Linux") {
+        dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
+    }
+    else {
+        dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+    }
+    const __DIRNAME__ = dirname;
     let key = await Reader.readFile(`${__DIRNAME__}/../../private/Resources/privateKey.key`);
     let cert = await Reader.readFile(`${__DIRNAME__}/../../private/Resources/certificate.crt`);
     let options = {

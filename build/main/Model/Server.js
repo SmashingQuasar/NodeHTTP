@@ -27,6 +27,7 @@ class Server extends HTTPSServer {
     }
     start() {
         this.listen(this.port);
+        console.log("Server started.");
     }
     async dispatchRequest(request, response) {
         const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");

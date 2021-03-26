@@ -62,6 +62,7 @@ class Server extends HTTPSServer
     public start(): void
     {
         this.listen(this.port);
+        console.log("Server started.");
     }
 
     private async dispatchRequest(request: Request, response: ServerResponse): Promise<void>
