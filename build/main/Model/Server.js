@@ -2,6 +2,7 @@ import { Server as HTTPSServer } from "https";
 import { Request } from "./Request.js";
 import { Routing } from "./Routing.js";
 import { promises as FileSystem } from "fs";
+import { type as OSType } from "os";
 class Server extends HTTPSServer {
     constructor(options, listener) {
         super(options, listener);
@@ -25,12 +26,36 @@ class Server extends HTTPSServer {
             }
         });
     }
-    start() {
+    async start() {
+        let dirname = "";
+        if (OSType() === "Linux") {
+            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
+        }
+        else {
+            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        }
+        const __DIRNAME__ = dirname;
+        const CONFIGURATION_FILE = await FileSystem.readFile(`${__DIRNAME__}/../../../private/Resources/configuration/server.json`);
+        if (CONFIGURATION_FILE instanceof Buffer) {
+        }
+        else {
+            const CONFIGURATION = JSON.parse(CONFIGURATION_FILE);
+            if (CONFIGURATION.port !== undefined) {
+                this.port = CONFIGURATION.port;
+            }
+        }
         this.listen(this.port);
         console.log("Server started.");
     }
     async dispatchRequest(request, response) {
-        const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        let dirname = "";
+        if (OSType() === "Linux") {
+            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
+        }
+        else {
+            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        }
+        const __DIRNAME__ = dirname;
         const ROUTER = new Routing();
         await ROUTER.loadRoutingFile();
         const ROUTES = ROUTER.getRoutes();

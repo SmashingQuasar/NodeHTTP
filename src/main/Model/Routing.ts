@@ -33,7 +33,7 @@ class Routing
 
                 throw new Error("Provided path for routing configuration file does not link to a file.");
             }
-
+            
             const RAW_CONFIGURATION: string|Buffer = await FileSystem.readFile(path, { encoding: "UTF-8" });
 
             if (RAW_CONFIGURATION instanceof Buffer)

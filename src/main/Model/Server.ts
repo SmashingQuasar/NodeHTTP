@@ -4,6 +4,7 @@ import { Request } from "./Request.js";
 import { Routing } from "./Routing.js";
 import { ParsedUrlQuery } from "querystring";
 import { promises as FileSystem, Stats } from "fs";
+import { type as OSType } from "os";
 // import { Controller } from "./Controller";
 
 class Server extends HTTPSServer
@@ -59,16 +60,53 @@ class Server extends HTTPSServer
     /**
      * start
      */
-    public start(): void
+    public async start(): Promise<void>
     {
+        let dirname = "";
+        if (OSType() === "Linux")
+        {
+            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
+        }
+        else
+        {
+            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        }
+        const __DIRNAME__ = dirname;
+        
+        const CONFIGURATION_FILE: string|Buffer = await FileSystem.readFile(`${__DIRNAME__}/../../../private/Resources/configuration/server.json`);
+
+        if (CONFIGURATION_FILE instanceof Buffer)
+        {
+            // TODO
+        }
+        else
+        {
+            const CONFIGURATION: ServerConfiguration = JSON.parse(CONFIGURATION_FILE);
+
+            if (CONFIGURATION.port !== undefined)
+            {
+                this.port = CONFIGURATION.port;
+            }
+        }
+
+
         this.listen(this.port);
         console.log("Server started.");
     }
 
     private async dispatchRequest(request: Request, response: ServerResponse): Promise<void>
     {
-        // const __DIRNAME__ = import.meta.url.replace(/^file:\/\/(.*)\/[^\/]+$/, "$1");
-        const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        let dirname = "";
+        if (OSType() === "Linux")
+        {
+            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
+        }
+        else
+        {
+            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        }
+        const __DIRNAME__ = dirname;
+        
         const ROUTER: Routing = new Routing();
 
         await ROUTER.loadRoutingFile();

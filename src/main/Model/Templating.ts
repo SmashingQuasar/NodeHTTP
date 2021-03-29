@@ -1,6 +1,7 @@
 import { promises as FileSystem, Stats } from "fs";
 import { View as AbstractView } from "./View.js";
 import { basename } from "path";
+import { type as OSType } from "os";
 
 class Templating
 {
@@ -11,8 +12,17 @@ class Templating
      */
     public constructor()
     {
-        // const __DIRNAME__ = import.meta.url.replace(/^file:\/\/(.*)\/[^\/]+$/, "$1");
-        const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        let dirname = "";
+        if (OSType() === "Linux")
+        {
+            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
+        }
+        else
+        {
+            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        }
+        const __DIRNAME__ = dirname;
+        
 
         this.publicDirectory = `${__DIRNAME__}/../../../www`;
     }
@@ -22,8 +32,17 @@ class Templating
      */
     public async render(path: string, parameters?: QueryParameter): Promise<string|null>
     {
-        // const __DIRNAME__ = import.meta.url.replace(/^file:\/\/(.*)\/[^\/]+$/, "$1");
-        const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        let dirname = "";
+        if (OSType() === "Linux")
+        {
+            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
+        }
+        else
+        {
+            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        }
+        const __DIRNAME__ = dirname;
+        
         try
         {
             const FULL_PATH: string = `${this.publicDirectory}/${path}`;

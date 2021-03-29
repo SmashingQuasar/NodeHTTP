@@ -1,13 +1,28 @@
 import { promises as FileSystem } from "fs";
 import { basename } from "path";
+import { type as OSType } from "os";
 class Templating {
     constructor() {
         this.publicDirectory = "";
-        const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        let dirname = "";
+        if (OSType() === "Linux") {
+            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
+        }
+        else {
+            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        }
+        const __DIRNAME__ = dirname;
         this.publicDirectory = `${__DIRNAME__}/../../../www`;
     }
     async render(path, parameters) {
-        const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        let dirname = "";
+        if (OSType() === "Linux") {
+            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
+        }
+        else {
+            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        }
+        const __DIRNAME__ = dirname;
         try {
             const FULL_PATH = `${this.publicDirectory}/${path}`;
             const FILE_STATS = await FileSystem.stat(FULL_PATH);

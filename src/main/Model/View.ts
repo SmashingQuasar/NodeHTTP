@@ -1,5 +1,6 @@
 import { promises as FileSystem, Stats } from "fs";
 import { Templating } from "./Templating.js";
+import { type as OSType } from "os";
 
 class View
 {
@@ -14,7 +15,17 @@ class View
     public constructor(parameters?: any)
     {
         this.parameters = parameters;
-        const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        let dirname = "";
+        if (OSType() === "Linux")
+        {
+            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
+        }
+        else
+        {
+            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        }
+        const __DIRNAME__ = dirname;
+        
         this.publicDirectory = `${__DIRNAME__}/../../../www`;
     }
 

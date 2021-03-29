@@ -3,6 +3,7 @@
 import { Server } from "./Server.js";
 import { promises as Reader } from "fs";
 import { ServerOptions } from "https";
+import { type as OSType } from "os";
 
 class System
 {
@@ -20,9 +21,17 @@ class System
     public async startHTTPServer(configuration: HTTPServerConfiguration): Promise<void>
     {
         const OPTIONS: ServerOptions = {};
-        // const __DIRNAME__ = import.meta.url.replace(/^file:\/\/(.*)\/[^\/]+$/, "$1");
-        const __DIRNAME__ = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
-
+        let dirname = "";
+        if (OSType() === "Linux")
+        {
+            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
+        }
+        else
+        {
+            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        }
+        const __DIRNAME__ = dirname;
+        
         if (configuration.key !== undefined && configuration.certificate != undefined)
         {
             const KEY: Buffer = await Reader.readFile(`${__DIRNAME__}/Resources/privateKey.key`);

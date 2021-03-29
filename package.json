@@ -16,5 +16,8 @@
         "url": "https://github.com/SmashingQuasar/NodeHTTP/issues"
     },
     "homepage": "https://github.com/SmashingQuasar/NodeHTTP#readme",
-    "type": "module"
+    "type": "module",
+    "devDependencies": {
+        "@types/node": "^12.12.6"
+    }
 }
