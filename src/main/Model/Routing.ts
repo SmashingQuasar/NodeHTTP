@@ -1,4 +1,5 @@
 import { promises as FileSystem, Stats } from "fs";
+import { type as OSType } from "os";
 
 class Routing
 {
@@ -10,7 +11,18 @@ class Routing
      */
     public constructor()
     {
-        this.sourceFilePath = `./private/Resources/configuration/routing.json`;
+        let dirname = "";
+        if (OSType() === "Linux")
+        {
+            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
+        }
+        else
+        {
+            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
+        }
+        const __DIRNAME__ = dirname;
+        
+        this.sourceFilePath = `${__DIRNAME__}/../../../private/Resources/configuration/routing.json`;
     }
 
     /**
@@ -33,7 +45,7 @@ class Routing
 
                 throw new Error("Provided path for routing configuration file does not link to a file.");
             }
-            
+
             const RAW_CONFIGURATION: string|Buffer = await FileSystem.readFile(path, { encoding: "UTF-8" });
 
             if (RAW_CONFIGURATION instanceof Buffer)
