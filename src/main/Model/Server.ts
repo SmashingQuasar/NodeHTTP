@@ -73,7 +73,7 @@ class Server extends HTTPSServer
         }
         const __DIRNAME__ = dirname;
         
-        const CONFIGURATION_FILE: string|Buffer = await FileSystem.readFile(`${__DIRNAME__}/../../../private/Resources/configuration/server.json`);
+        const CONFIGURATION_FILE: string|Buffer = await FileSystem.readFile(`${__DIRNAME__}/../../../private/Resources/configuration/server.json`, { encoding: "UTF-8" });
 
         let configuration: ServerConfiguration = {
             port: 443

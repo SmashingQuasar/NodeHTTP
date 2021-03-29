@@ -35,7 +35,7 @@ class Server extends HTTPSServer {
             dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
         }
         const __DIRNAME__ = dirname;
-        const CONFIGURATION_FILE = await FileSystem.readFile(`${__DIRNAME__}/../../../private/Resources/configuration/server.json`);
+        const CONFIGURATION_FILE = await FileSystem.readFile(`${__DIRNAME__}/../../../private/Resources/configuration/server.json`, { encoding: "UTF-8" });
         let configuration = {
             port: 443
         };
