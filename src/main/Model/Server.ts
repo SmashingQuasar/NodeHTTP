@@ -75,17 +75,21 @@ class Server extends HTTPSServer
         
         const CONFIGURATION_FILE: string|Buffer = await FileSystem.readFile(`${__DIRNAME__}/../../../private/Resources/configuration/server.json`);
 
+        let configuration: ServerConfiguration = {
+            port: 443
+        };
+
         if (CONFIGURATION_FILE instanceof Buffer)
         {
             // TODO
         }
         else
         {
-            const CONFIGURATION: ServerConfiguration = JSON.parse(CONFIGURATION_FILE);
+            configuration = JSON.parse(CONFIGURATION_FILE);
 
-            if (CONFIGURATION.port !== undefined)
+            if (configuration.port !== undefined)
             {
-                this.port = CONFIGURATION.port;
+                this.port = configuration.port;
             }
         }
 
