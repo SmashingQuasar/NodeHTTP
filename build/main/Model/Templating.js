@@ -1,28 +1,13 @@
 import { promises as FileSystem } from "fs";
 import { basename } from "path";
-import { type as OSType } from "os";
+import { System } from "./System.js";
 class Templating {
     constructor() {
         this.publicDirectory = "";
-        let dirname = "";
-        if (OSType() === "Linux") {
-            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
-        }
-        else {
-            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
-        }
-        const __DIRNAME__ = dirname;
-        this.publicDirectory = `${__DIRNAME__}/../../../www`;
     }
     async render(path, parameters) {
-        let dirname = "";
-        if (OSType() === "Linux") {
-            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
-        }
-        else {
-            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
-        }
-        const __DIRNAME__ = dirname;
+        const __DIRNAME__ = await System.GetRootDirectory();
+        this.publicDirectory = `${__DIRNAME__}/www`;
         try {
             const FULL_PATH = `${this.publicDirectory}/${path}`;
             const FILE_STATS = await FileSystem.stat(FULL_PATH);
@@ -52,7 +37,7 @@ class Templating {
             template = template.replace(/{{else}}/g, "`;\r\n}\r\nelse\r\n{\r\nthis.content += `");
             template = template.replace(/{{endif}}/g, "`;\r\n}\r\nthis.content += `");
             template = template.replace(/{{([^}]+)}}/g, "${$1}");
-            template = `import { View as AbstractView } from "${__DIRNAME__}/View.js";
+            template = `import { View as AbstractView } from "${__DIRNAME__}/build/main/Model/View.js";
 class View extends AbstractView
 {
     constructor(parameters)
@@ -68,11 +53,8 @@ class View extends AbstractView
 }
 export { View };`;
             const FILENAME = basename(path);
-            console.log(FILENAME);
             const SAVE_PATH = path.replace(new RegExp(`/?${FILENAME}`), "");
-            console.log(SAVE_PATH);
-            const DESTINATION_DIRECTORY = `${__DIRNAME__}/../../cache/${SAVE_PATH}`;
-            console.log(DESTINATION_DIRECTORY);
+            const DESTINATION_DIRECTORY = `${__DIRNAME__}/build/cache/${SAVE_PATH}`;
             await FileSystem.mkdir(DESTINATION_DIRECTORY, { recursive: true });
             const FULL_FILE_PATH = `${DESTINATION_DIRECTORY}/${FILENAME}.mjs`;
             await FileSystem.writeFile(FULL_FILE_PATH, template);

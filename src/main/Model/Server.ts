@@ -4,8 +4,7 @@ import { Request } from "./Request.js";
 import { Routing } from "./Routing.js";
 import { ParsedUrlQuery } from "querystring";
 import { promises as FileSystem, Stats } from "fs";
-import { type as OSType } from "os";
-// import { Controller } from "./Controller";
+import { System } from "./System.js";
 
 class Server extends HTTPSServer
 {
@@ -62,18 +61,9 @@ class Server extends HTTPSServer
      */
     public async start(): Promise<void>
     {
-        let dirname = "";
-        if (OSType() === "Linux")
-        {
-            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
-        }
-        else
-        {
-            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
-        }
-        const __DIRNAME__ = dirname;
+        const __DIRNAME__ = await System.GetRootDirectory();
         
-        const CONFIGURATION_FILE: string|Buffer = await FileSystem.readFile(`${__DIRNAME__}/../../../private/Resources/configuration/server.json`, { encoding: "UTF-8" });
+        const CONFIGURATION_FILE: string|Buffer = await FileSystem.readFile(`${__DIRNAME__}/private/Resources/configuration/server.json`, { encoding: "UTF-8" });
 
         let configuration: ServerConfiguration = {
             port: 443
@@ -100,16 +90,7 @@ class Server extends HTTPSServer
 
     private async dispatchRequest(request: Request, response: ServerResponse): Promise<void>
     {
-        let dirname = "";
-        if (OSType() === "Linux")
-        {
-            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
-        }
-        else
-        {
-            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
-        }
-        const __DIRNAME__ = dirname;
+        const __DIRNAME__ = await System.GetRootDirectory();
         
         const ROUTER: Routing = new Routing();
 
@@ -129,30 +110,33 @@ class Server extends HTTPSServer
                     if (MATCHES !== null)
                     {
                         const QUERY: ParsedUrlQuery = {};
-                        const KEYS: Array<string> = Object.keys(route.variables);
 
-                        await Promise.all(
-                            KEYS.map(
-                                (name: string): void => {
-                                    const VARIABLE_REFERENCE: string = route.variables[name];
+                        if (route.variables !== null && route.variables !== undefined)
+                        {
+                            const KEYS: Array<string> = Object.keys(route.variables);
 
-                                    if (VARIABLE_REFERENCE.match(/^\$[0-9]+$/) === null)
-                                    {
-                                        //TODO Log variable reference exception here
+                            await Promise.all(
+                                KEYS.map(
+                                    (name: string): void => {
+                                        const VARIABLE_REFERENCE: string = route.variables[name];
+    
+                                        if (VARIABLE_REFERENCE.match(/^\$[0-9]+$/) === null)
+                                        {
+                                            //TODO Log variable reference exception here
+                                        }
+                                        const INDEX: number = parseInt(VARIABLE_REFERENCE.substring(1));
+    
+                                        if (MATCHES[INDEX] === undefined || MATCHES[INDEX] === null)
+                                        {
+                                            //TODO Log not found variable value exception here
+                                        }
+                                        QUERY[name] = MATCHES[INDEX];
                                     }
-                                    const INDEX: number = parseInt(VARIABLE_REFERENCE.substring(1));
-
-                                    if (MATCHES[INDEX] === undefined || MATCHES[INDEX] === null)
-                                    {
-                                        //TODO Log not found variable value exception here
-                                    }
-                                    QUERY[name] = MATCHES[INDEX];
-                                }
-                            )
-                        );
-
+                                )
+                            );
+                        }
+                        
                         request.setQuery(QUERY);
-
                         controller_name = `${route.controller}Controller`;
                         action_name = `${route.action}Action`;
                     }
@@ -162,7 +146,7 @@ class Server extends HTTPSServer
         
         if (controller_name === undefined || action_name === undefined)
         {
-            const PUBLIC_PATH: string = `${__DIRNAME__}/../../../www`;
+            const PUBLIC_PATH: string = `${__DIRNAME__}/www`;
             
             try
             {
@@ -187,7 +171,7 @@ class Server extends HTTPSServer
         {
             try
             {
-                const CLASS_PATH: string = `${__DIRNAME__}/../Controller/${controller_name}.js`;
+                const CLASS_PATH: string = `${__DIRNAME__}/build/main/Controller/${controller_name}.js`;
                 const FILE_STATS: Stats = await FileSystem.stat(CLASS_PATH);
 
                 if (!FILE_STATS.isFile())

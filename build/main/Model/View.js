@@ -1,23 +1,16 @@
 import { promises as FileSystem } from "fs";
 import { Templating } from "./Templating.js";
-import { type as OSType } from "os";
+import { System } from "./System.js";
 class View {
     constructor(parameters) {
         this.layout = null;
         this.content = "";
         this.publicDirectory = "";
         this.parameters = parameters;
-        let dirname = "";
-        if (OSType() === "Linux") {
-            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
-        }
-        else {
-            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
-        }
-        const __DIRNAME__ = dirname;
-        this.publicDirectory = `${__DIRNAME__}/../../../www`;
     }
     async build() {
+        const __DIRNAME__ = await System.GetRootDirectory();
+        this.publicDirectory = `${__DIRNAME__}/www`;
         if (this.layout !== null && this.layout !== "") {
             const STATS = await FileSystem.stat(`${this.publicDirectory}/${this.layout}`);
             if (STATS.isFile() === false) {

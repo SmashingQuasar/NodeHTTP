@@ -1,7 +1,7 @@
 import { promises as FileSystem, Stats } from "fs";
 import { View as AbstractView } from "./View.js";
 import { basename } from "path";
-import { type as OSType } from "os";
+import { System } from "./System.js";
 
 class Templating
 {
@@ -12,19 +12,7 @@ class Templating
      */
     public constructor()
     {
-        let dirname = "";
-        if (OSType() === "Linux")
-        {
-            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
-        }
-        else
-        {
-            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
-        }
-        const __DIRNAME__ = dirname;
-        
 
-        this.publicDirectory = `${__DIRNAME__}/../../../www`;
     }
 
     /**
@@ -32,16 +20,10 @@ class Templating
      */
     public async render(path: string, parameters?: QueryParameter): Promise<string|null>
     {
-        let dirname = "";
-        if (OSType() === "Linux")
-        {
-            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
-        }
-        else
-        {
-            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
-        }
-        const __DIRNAME__ = dirname;
+        const __DIRNAME__ = await System.GetRootDirectory();
+        
+
+        this.publicDirectory = `${__DIRNAME__}/www`;
         
         try
         {
@@ -98,7 +80,7 @@ class Templating
             template = template.replace(/{{endif}}/g, "`;\r\n}\r\nthis.content += `");
             template = template.replace(/{{([^}]+)}}/g, "${$1}");
 
-            template = `import { View as AbstractView } from "${__DIRNAME__}/View.js";
+            template = `import { View as AbstractView } from "${__DIRNAME__}/build/main/Model/View.js";
 class View extends AbstractView
 {
     constructor(parameters)
@@ -129,14 +111,9 @@ export { View };`;
 
             const FILENAME: string = basename(path);
 
-            console.log(FILENAME);
-            
             const SAVE_PATH: string = path.replace(new RegExp(`/?${FILENAME}`), "");
 
-            console.log(SAVE_PATH);
-
-            const DESTINATION_DIRECTORY: string = `${__DIRNAME__}/../../cache/${SAVE_PATH}`;
-            console.log(DESTINATION_DIRECTORY);
+            const DESTINATION_DIRECTORY: string = `${__DIRNAME__}/build/cache/${SAVE_PATH}`;
 
             await FileSystem.mkdir(DESTINATION_DIRECTORY, { recursive: true });
 

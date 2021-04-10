@@ -2,7 +2,7 @@ import { Server as HTTPSServer } from "https";
 import { Request } from "./Request.js";
 import { Routing } from "./Routing.js";
 import { promises as FileSystem } from "fs";
-import { type as OSType } from "os";
+import { System } from "./System.js";
 class Server extends HTTPSServer {
     constructor(options, listener) {
         super(options, listener);
@@ -27,15 +27,8 @@ class Server extends HTTPSServer {
         });
     }
     async start() {
-        let dirname = "";
-        if (OSType() === "Linux") {
-            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
-        }
-        else {
-            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
-        }
-        const __DIRNAME__ = dirname;
-        const CONFIGURATION_FILE = await FileSystem.readFile(`${__DIRNAME__}/../../../private/Resources/configuration/server.json`, { encoding: "UTF-8" });
+        const __DIRNAME__ = await System.GetRootDirectory();
+        const CONFIGURATION_FILE = await FileSystem.readFile(`${__DIRNAME__}/private/Resources/configuration/server.json`, { encoding: "UTF-8" });
         let configuration = {
             port: 443
         };
@@ -51,14 +44,7 @@ class Server extends HTTPSServer {
         console.log("Server started.");
     }
     async dispatchRequest(request, response) {
-        let dirname = "";
-        if (OSType() === "Linux") {
-            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
-        }
-        else {
-            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
-        }
-        const __DIRNAME__ = dirname;
+        const __DIRNAME__ = await System.GetRootDirectory();
         const ROUTER = new Routing();
         await ROUTER.loadRoutingFile();
         const ROUTES = ROUTER.getRoutes();
@@ -68,23 +54,25 @@ class Server extends HTTPSServer {
             const MATCHES = request.getRequestedPath().match(route.regexp);
             if (MATCHES !== null) {
                 const QUERY = {};
-                const KEYS = Object.keys(route.variables);
-                await Promise.all(KEYS.map((name) => {
-                    const VARIABLE_REFERENCE = route.variables[name];
-                    if (VARIABLE_REFERENCE.match(/^\$[0-9]+$/) === null) {
-                    }
-                    const INDEX = parseInt(VARIABLE_REFERENCE.substring(1));
-                    if (MATCHES[INDEX] === undefined || MATCHES[INDEX] === null) {
-                    }
-                    QUERY[name] = MATCHES[INDEX];
-                }));
+                if (route.variables !== null && route.variables !== undefined) {
+                    const KEYS = Object.keys(route.variables);
+                    await Promise.all(KEYS.map((name) => {
+                        const VARIABLE_REFERENCE = route.variables[name];
+                        if (VARIABLE_REFERENCE.match(/^\$[0-9]+$/) === null) {
+                        }
+                        const INDEX = parseInt(VARIABLE_REFERENCE.substring(1));
+                        if (MATCHES[INDEX] === undefined || MATCHES[INDEX] === null) {
+                        }
+                        QUERY[name] = MATCHES[INDEX];
+                    }));
+                }
                 request.setQuery(QUERY);
                 controller_name = `${route.controller}Controller`;
                 action_name = `${route.action}Action`;
             }
         }));
         if (controller_name === undefined || action_name === undefined) {
-            const PUBLIC_PATH = `${__DIRNAME__}/../../../www`;
+            const PUBLIC_PATH = `${__DIRNAME__}/www`;
             try {
                 const POSSIBLE_FILE = await FileSystem.stat(`${PUBLIC_PATH}/${request.getRequestedPath()}`);
                 if (!POSSIBLE_FILE.isFile()) {
@@ -100,7 +88,7 @@ class Server extends HTTPSServer {
         }
         else {
             try {
-                const CLASS_PATH = `${__DIRNAME__}/../Controller/${controller_name}.js`;
+                const CLASS_PATH = `${__DIRNAME__}/build/main/Controller/${controller_name}.js`;
                 const FILE_STATS = await FileSystem.stat(CLASS_PATH);
                 if (!FILE_STATS.isFile()) {
                     throw new Error("The requested controller is not a file.");

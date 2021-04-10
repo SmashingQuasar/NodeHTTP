@@ -1,19 +1,13 @@
 import { promises as FileSystem } from "fs";
-import { type as OSType } from "os";
+import { System } from "./System.js";
 class Routing {
     constructor() {
+        this.sourceFilePath = "./";
         this.routes = [];
-        let dirname = "";
-        if (OSType() === "Linux") {
-            dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^\/]+$/, "/$1");
-        }
-        else {
-            dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]\:(.*)\/[^\/]+$/, "$1");
-        }
-        const __DIRNAME__ = dirname;
-        this.sourceFilePath = `${__DIRNAME__}/../../../private/Resources/configuration/routing.json`;
     }
     async loadRoutingFile(path) {
+        const __DIRNAME__ = await System.GetRootDirectory();
+        this.sourceFilePath = `${__DIRNAME__}/private/Resources/configuration/routing.json`;
         if (path === undefined) {
             path = this.sourceFilePath;
         }
