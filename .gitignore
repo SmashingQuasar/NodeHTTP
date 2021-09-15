@@ -4,3 +4,4 @@ temp/logs/*.log
 yarn.lock
 package-lock.json
 nodemon.json
+yarn-error.log
