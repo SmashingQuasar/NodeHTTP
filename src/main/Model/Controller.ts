@@ -1,16 +1,12 @@
-
-module Model
+class Controller
 {
-    export class Controller
+    /**
+     * constructor
+     */
+    public constructor()
     {
-        /**
-         * constructor
-         */
-        public constructor()
-        {
-            
-        }
+        
     }
 }
 
-export = Model;
+export { Controller };

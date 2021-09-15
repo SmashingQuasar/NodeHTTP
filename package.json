@@ -1,25 +1,23 @@
 {
-  "name": "nodehttp",
-  "version": "0.1.0",
-  "description": "A simple Node.JS framework.",
-  "main": "build/app.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SmashingQuasar/NodeHTTP.git"
-  },
-  "keywords": [
-    "Framework"
-  ],
-  "author": "Nicolas \"SmashingQuasar\" Cordier",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/SmashingQuasar/NodeHTTP/issues"
-  },
-  "homepage": "https://github.com/SmashingQuasar/NodeHTTP#readme",
-  "devDependencies": {
-    "@types/node": "^14.11.8"
-  }
+    "name": "nodehttp",
+    "version": "0.1.0",
+    "description": "",
+    "main": "build/main/app.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SmashingQuasar/NodeHTTP.git"
+    },
+    "author": "Nicolas \"SmashingQuasar\" Cordier",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/SmashingQuasar/NodeHTTP/issues"
+    },
+    "homepage": "https://github.com/SmashingQuasar/NodeHTTP#readme",
+    "type": "module",
+    "devDependencies": {
+        "@types/node": "^12.12.6"
+    }
 }

@@ -2,269 +2,266 @@ import { IncomingMessage, IncomingHttpHeaders } from "http";
 // import { Socket } from "net";
 import { parse as parseQuery, ParsedUrlQuery } from "querystring";
 
-module Model
+class Request
 {
-    export class Request
+    private requestedURL: string;
+    private requestedPath: string;
+    private pathFragments: Array<string> = [];
+    private query: ParsedUrlQuery = {};
+    private request: ParsedUrlQuery = {};
+    private rawBody: string = "";
+    private body: object|string = "";
+    private headers: IncomingHttpHeaders;
+    private contentType: string = "";
+    private boundary: string = "";
+
+    /**
+     * constructor
+     */
+    public constructor(message: IncomingMessage)
     {
-        private requestedURL: string;
-        private requestedPath: string;
-        private pathFragments: Array<string> = [];
-        private query: ParsedUrlQuery = {};
-        private request: ParsedUrlQuery = {};
-        private rawBody: string = "";
-        private body: object|string = "";
-        private headers: IncomingHttpHeaders;
-        private contentType: string = "";
-        private boundary: string = "";
+        this.requestedURL = message.url || "";
+        this.headers = message.headers;
 
-        /**
-         * constructor
-         */
-        public constructor(message: IncomingMessage)
+        if (this.headers['content-type'] !== undefined)
         {
-            this.requestedURL = message.url || "";
-            this.headers = message.headers;
+            this.contentType = this.headers['content-type'];
 
-            if (this.headers['content-type'] !== undefined)
+            if (this.contentType.match(/multipart\/form-data;/) !== null)
             {
-                this.contentType = this.headers['content-type'];
-
-                if (this.contentType.match(/multipart\/form-data;/) !== null)
+                let splitted_content_type: Array<string> = this.contentType.split("=");
+                
+                if (splitted_content_type.length === 2)
                 {
-                    let splitted_content_type: Array<string> = this.contentType.split("=");
-                    
-                    if (splitted_content_type.length === 2)
-                    {
 
-                        this.boundary = `--${splitted_content_type[1]}`;
-                    }
-                    else
-                    {
-                        //TODO Log the error of received header
-                    }
-                    this.contentType = "multipart/form-data";
+                    this.boundary = `--${splitted_content_type[1]}`;
                 }
-            }
-
-            let splitted_url: Array<string> = this.requestedURL.split("?");
-            this.requestedPath = splitted_url[0];
-
-            if (splitted_url[1] !== undefined)
-            {
-                this.query = parseQuery(splitted_url[1]);
-            }
-
-            let path_fragments: Array<string> = this.requestedPath.split("/");
-            path_fragments = path_fragments.filter(
-                (value: string): boolean => {
-                    return value.length !== 0;
+                else
+                {
+                    //TODO Log the error of received header
                 }
-            );
-
-            this.pathFragments = path_fragments;
+                this.contentType = "multipart/form-data";
+            }
         }
 
-        /**
-         * getRawBody
-         */
-        public getRawBody(): string
+        let splitted_url: Array<string> = this.requestedURL.split("?");
+        this.requestedPath = splitted_url[0];
+
+        if (splitted_url[1] !== undefined)
         {
-            return this.rawBody;
+            this.query = parseQuery(splitted_url[1]);
         }
 
-        /**
-         * setRawBody
-         */
-        public async setRawBody(value: string): Promise<void>
+        let path_fragments: Array<string> = this.requestedPath.split("/");
+        path_fragments = path_fragments.filter(
+            (value: string): boolean => {
+                return value.length !== 0;
+            }
+        );
+
+        this.pathFragments = path_fragments;
+    }
+
+    /**
+     * getRawBody
+     */
+    public getRawBody(): string
+    {
+        return this.rawBody;
+    }
+
+    /**
+     * setRawBody
+     */
+    public async setRawBody(value: string): Promise<void>
+    {
+        this.rawBody = value;
+
+        switch (this.getContentType())
         {
-            this.rawBody = value;
+            case "application/json":
 
-            switch (this.getContentType())
-            {
-                case "application/json":
+                try
+                {
+                    this.body = JSON.parse(this.rawBody);
+                }
+                catch (e)
+                {
+                    //TODO: Add error log here
+                }
 
-                    try
-                    {
-                        this.body = JSON.parse(this.rawBody);
-                    }
-                    catch (e)
-                    {
-                        //TODO: Add error log here
-                    }
+            break;
 
-                break;
+            case "application/x-www-form-urlencoded":
 
-                case "application/x-www-form-urlencoded":
+                this.request = parseQuery(this.rawBody);
 
-                    this.request = parseQuery(this.rawBody);
+            break;
 
-                break;
+            case "multipart/form-data":
 
-                case "multipart/form-data":
+                let parts: Array<string> = this.rawBody.split(this.boundary);
+                
+                let files: Array<RequestFile> = [];
 
-                    let parts: Array<string> = this.rawBody.split(this.boundary);
-                    
-                    let files: Array<RequestFile> = [];
+                parts.forEach(
+                    async (part: string, index: number): Promise<void> => {
+                        if (index !== 0 && index < parts.length - 1)
+                        {
+                            // let content_disposition_matches: RegExpMatchArray|null = part.match(/Content-Disposition: ([^;]+);\s+/i);
+                            // let content_disposition: string = "";
 
-                    parts.forEach(
-                        async (part: string, index: number): Promise<void> => {
-                            if (index !== 0 && index < parts.length - 1)
+                            // if (content_disposition_matches !== null)
+                            // {
+                            //     content_disposition = content_disposition_matches[1].trim();
+                            // }
+
+                            let name_matches: RegExpMatchArray|null = part.match(/name="([^"]+)";?\s+/i);
+                            let name: string = "";
+
+                            if (name_matches !== null)
                             {
-                                // let content_disposition_matches: RegExpMatchArray|null = part.match(/Content-Disposition: ([^;]+);\s+/i);
-                                // let content_disposition: string = "";
-
-                                // if (content_disposition_matches !== null)
-                                // {
-                                //     content_disposition = content_disposition_matches[1].trim();
-                                // }
-
-                                let name_matches: RegExpMatchArray|null = part.match(/name="([^"]+)";?\s+/i);
-                                let name: string = "";
-
-                                if (name_matches !== null)
-                                {
-                                    name = name_matches[1].trim();
-                                }
-
-                                let filename_matches: RegExpMatchArray|null = part.match(/filename="([^\n]+)";?\s+/i);
-                                let filename: string = "";
-
-                                if (filename_matches !== null)
-                                {
-                                    filename = filename_matches[1].trim();
-                                }
-
-                                let content_type_matches: RegExpMatchArray|null = part.match(/Content-Type: ([^\s]+)\s+/i);
-                                let content_type: string = "";
-
-                                if (content_type_matches !== null)
-                                {
-                                    content_type = content_type_matches[1].trim();
-                                }
-
-                                let splitted_part: Array<string> = part.split("\r\n\r\n"); // Splitting on double Carriage Return + Line Feed is the distinctive point between preamble and content.
-
-                                if (filename === "")
-                                {
-                                    this.request[name] = splitted_part[1];
-                                }
-                                else
-                                {
-                                    files.push(
-                                        {
-                                            name: filename,
-                                            mimeType: content_type,
-                                            content: splitted_part[1]
-                                        }
-                                    );
-                                }
-
+                                name = name_matches[1].trim();
                             }
+
+                            let filename_matches: RegExpMatchArray|null = part.match(/filename="([^\n]+)";?\s+/i);
+                            let filename: string = "";
+
+                            if (filename_matches !== null)
+                            {
+                                filename = filename_matches[1].trim();
+                            }
+
+                            let content_type_matches: RegExpMatchArray|null = part.match(/Content-Type: ([^\s]+)\s+/i);
+                            let content_type: string = "";
+
+                            if (content_type_matches !== null)
+                            {
+                                content_type = content_type_matches[1].trim();
+                            }
+
+                            let splitted_part: Array<string> = part.split("\r\n\r\n"); // Splitting on double Carriage Return + Line Feed is the distinctive point between preamble and content.
+
+                            if (filename === "")
+                            {
+                                this.request[name] = splitted_part[1];
+                            }
+                            else
+                            {
+                                files.push(
+                                    {
+                                        name: filename,
+                                        mimeType: content_type,
+                                        content: splitted_part[1]
+                                    }
+                                );
+                            }
+
                         }
-                    );
+                    }
+                );
 
-                break;
+            break;
 
-                default:
+            default:
 
-                    this.body = this.rawBody;
+                this.body = this.rawBody;
 
-                break;
-            }
-
-
+            break;
         }
 
-        /**
-         * getBody
-         */
-        public getBody(): object|string
+
+    }
+
+    /**
+     * getBody
+     */
+    public getBody(): object|string
+    {
+        return this.body;
+    }
+
+    /**
+     * getBoundary
+     */
+    public getBoundary(): string
+    {
+        return this.boundary;    
+    }
+
+    /**
+     * getContentType
+     */
+    public getContentType(): string
+    {
+        return this.contentType;
+    }
+
+    /**
+     * getHeaders
+     */
+    public getHeaders(): IncomingHttpHeaders
+    {
+        return this.headers;    
+    }
+
+    /**
+     * getHeader
+     */
+    public getHeader(name: keyof IncomingHttpHeaders): string|string[]|null
+    {
+        name = name.toString();
+        name = name.toLowerCase();
+
+        let header: string|string[]|undefined = this.headers[name];
+
+        if (header !== undefined)
         {
-            return this.body;
+            return header;
         }
 
-        /**
-         * getBoundary
-         */
-        public getBoundary(): string
-        {
-            return this.boundary;    
-        }
+        return null;
+    }
 
-        /**
-         * getContentType
-         */
-        public getContentType(): string
-        {
-            return this.contentType;
-        }
+    /**
+     * getQuery
+     */
+    public getQuery(): ParsedUrlQuery
+    {
+        return this.query;
+    }
 
-        /**
-         * getHeaders
-         */
-        public getHeaders(): IncomingHttpHeaders
-        {
-            return this.headers;    
-        }
+    /**
+     * setQuery
+     */
+    public setQuery(query: ParsedUrlQuery): void
+    {
+        this.query = query;    
+    }
 
-        /**
-         * getHeader
-         */
-        public getHeader(name: keyof IncomingHttpHeaders): string|string[]|null
-        {
-            name = name.toString();
-            name = name.toLowerCase();
+    /**
+     * getRequestedPath
+     */
+    public getRequestedPath(): string
+    {
+        return this.requestedPath;
+    }
 
-            let header: string|string[]|undefined = this.headers[name];
+    /**
+     * getPathFragments
+     */
+    public getPathFragments(): Array<string>
+    {
+        return this.pathFragments;
+    }
 
-            if (header !== undefined)
-            {
-                return header;
-            }
-
-            return null;
-        }
-
-        /**
-         * getQuery
-         */
-        public getQuery(): ParsedUrlQuery
-        {
-            return this.query;
-        }
-
-        /**
-         * setQuery
-         */
-        public setQuery(query: ParsedUrlQuery): void
-        {
-            this.query = query;    
-        }
-
-        /**
-         * getRequestedPath
-         */
-        public getRequestedPath(): string
-        {
-            return this.requestedPath;
-        }
-
-        /**
-         * getPathFragments
-         */
-        public getPathFragments(): Array<string>
-        {
-            return this.pathFragments;
-        }
-
-        /**
-         * getRequest
-         */
-        public getRequest(): ParsedUrlQuery
-        {
-            return this.request;    
-        }
+    /**
+     * getRequest
+     */
+    public getRequest(): ParsedUrlQuery
+    {
+        return this.request;    
     }
 }
 
-export = Model;
+export { Request };

@@ -1,44 +1,56 @@
-import { Controller } from "../Model/Controller";
-import { Request } from "../Model/Request";
+import { Controller } from "../Model/Controller.js";
+import { Request } from "../Model/Request.js";
 import { ServerResponse } from "http";
+import { Templating } from "../Model/Templating.js";
+import { createGzip } from "zlib";
 
-module Model
+class ArticleController extends Controller
 {
-    export class ArticleController extends Controller
+    /**
+     * constructor
+     */
+    public constructor()
     {
-        /**
-         * constructor
-         */
-        public constructor()
-        {
-            super();
-        }
-        /**
-         * defaultAction
-         */
-        public async defaultAction(request: Request, response: ServerResponse): Promise<void>
-        {
-            let message: string = `Hello world!
-            <br />
-            Everything seems to be working.
-            Received variables: `;
+        super();
+    }
 
-            let variables_names = Object.keys(request.getQuery());
+    /**
+     * defaultAction
+     */
+    public async defaultAction(request: Request, response: ServerResponse): Promise<void>
+    {
+        let message: string = `Hello world!
+        <br />
+        Everything seems to be working.
+        Received variables: `;
 
-            await Promise.all(
-                variables_names.map(
-                    (name: string): void => {
-                        message += `<br />${name}: ${request.getQuery()[name]}`
-                    }
-                )
-            );
+        let variables_names = Object.keys(request.getQuery());
 
-            response.setHeader("Content-Type", "text/html");
-            response.write(message);
+        await Promise.all(
+            variables_names.map(
+                (name: string): void => {
+                    message += `<br />${name}: ${request.getQuery()[name]}`
+                }
+            )
+        );
 
-            response.end();
-        }
+        console.log(message);
+
+        const TEMPLATING: Templating = new Templating();
+        let content: string|null = await TEMPLATING.render(`index.html`, { title: "Hello world from templating!" });
+
+        response.setHeader("Content-Type", "text/html");
+        response.setHeader("Content-Encoding", "gzip");
+
+        const encoder = createGzip();
+        encoder.pipe(response);
+        encoder.write(content);
+        encoder.end();
+
+        // response.write(content);
+
+        // response.end();
     }
 }
 
-export = Model;
+export { ArticleController };
