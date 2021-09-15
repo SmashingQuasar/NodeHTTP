@@ -20,10 +20,7 @@ class Templating
      */
     public async render(path: string, parameters?: QueryParameter): Promise<string|null>
     {
-        const __DIRNAME__ = await System.GetRootDirectory();
-        
-
-        this.publicDirectory = `${__DIRNAME__}/www`;
+        this.publicDirectory = `${System.RootDirectory}/www`;
         
         try
         {
@@ -80,7 +77,7 @@ class Templating
             template = template.replace(/{{endif}}/g, "`;\r\n}\r\nthis.content += `");
             template = template.replace(/{{([^}]+)}}/g, "${$1}");
 
-            template = `import { View as AbstractView } from "${__DIRNAME__}/build/main/Model/View.js";
+            template = `import { View as AbstractView } from "${System.RootDirectory}/build/main/Model/View.js";
 class View extends AbstractView
 {
     constructor(parameters)
@@ -113,7 +110,7 @@ export { View };`;
 
             const SAVE_PATH: string = path.replace(new RegExp(`/?${FILENAME}`), "");
 
-            const DESTINATION_DIRECTORY: string = `${__DIRNAME__}/build/cache/${SAVE_PATH}`;
+            const DESTINATION_DIRECTORY: string = `${System.RootDirectory}/build/cache/${SAVE_PATH}`;
 
             await FileSystem.mkdir(DESTINATION_DIRECTORY, { recursive: true });
 

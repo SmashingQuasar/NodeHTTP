@@ -22,9 +22,7 @@ class View
      */
     public async build()
     {
-        const __DIRNAME__ = await System.GetRootDirectory();
-        
-        this.publicDirectory = `${__DIRNAME__}/www`;
+        this.publicDirectory = `${System.RootDirectory}/www`;
         
         if (this.layout !== null && this.layout !== "")
         {

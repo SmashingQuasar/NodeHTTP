@@ -19,9 +19,7 @@ class Routing
      */
     public async loadRoutingFile(path?: string)
     {
-        const __DIRNAME__ = await System.GetRootDirectory();
-        
-        this.sourceFilePath = `${__DIRNAME__}/private/Resources/configuration/routing.json`;
+        this.sourceFilePath = `${System.RootDirectory}/build/resources/configuration/routing.json`;
 
         if (path === undefined)
         {
@@ -39,15 +37,7 @@ class Routing
                 throw new Error("Provided path for routing configuration file does not link to a file.");
             }
 
-            const RAW_CONFIGURATION: string|Buffer = await FileSystem.readFile(path, { encoding: "UTF-8" });
-
-            if (RAW_CONFIGURATION instanceof Buffer)
-            {
-                //TODO Log here
-
-                throw new Error("TODO: Handle the case where a file returns a Buffer and not a string in Routing.ts.");
-            }
-
+            const RAW_CONFIGURATION: string = await FileSystem.readFile(path, { encoding: "utf-8" });
             const PARSED_CONFIGURATION: Array<RawRouteConfiguration> = JSON.parse(RAW_CONFIGURATION);
             
             PARSED_CONFIGURATION.forEach(

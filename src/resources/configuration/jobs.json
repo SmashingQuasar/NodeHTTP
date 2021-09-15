@@ -1,0 +1,62 @@
+[
+    {
+        "key": "order-diversification-codes",
+        "name": "Order Diversification Codes",
+        "address": "/node/process-order-codes",
+        "delay": 3600,
+        "parameters": ["order_id"],
+        "conditions": [
+            {
+                "property": "processed_codes",
+                "value": false
+            }
+        ]
+    },
+    {
+        "key": "order-send-summary",
+        "name": "Order Summary Sending",
+        "address": "/node/order-summary-sending",
+        "delay": 3600,
+        "parameters": ["order_id"],
+        "conditions": [
+            {
+                "property": "processed_codes",
+                "value": true
+            },
+            {
+                "property": "updated_vouchers",
+                "value": true
+            },
+            {
+                "property": "summary_email_sent",
+                "value": false
+            }
+        ]
+    },
+    {
+        "key": "order-send-gift-email",
+        "name": "Order Gift Email Sending",
+        "address": "/node/order-send-gift-email",
+        "delay": 3600,
+        "parameters": ["order_id"],
+        "conditions": [
+            {
+                "property": "gift_email_sent",
+                "value": false
+            }
+        ]
+    },
+    {
+        "key": "order-update-vouchers",
+        "name": "Order Vouchers Update",
+        "address": "/node/update-vouchers",
+        "delay": 3600,
+        "parameters": ["order_id"],
+        "conditions": [
+            {
+                "property": "updated_vouchers",
+                "value": false
+            }
+        ]
+    }
+]

@@ -44,9 +44,10 @@ class Server extends HTTPSServer
                 }
                 catch (e)
                 {
-                    //TODO Log general errors here
+                    const MESSAGE: string = `An error occured while handling request: "${e.message}".`;
 
-                    console.log("Custom error:", e);
+                    console.log(MESSAGE);
+                    System.Logger.logError(e);
 
                     response.statusCode = 404;
                     response.end("404 - Not found.");
@@ -61,9 +62,7 @@ class Server extends HTTPSServer
      */
     public async start(): Promise<void>
     {
-        const __DIRNAME__ = await System.GetRootDirectory();
-        
-        const CONFIGURATION_FILE: string|Buffer = await FileSystem.readFile(`${__DIRNAME__}/private/Resources/configuration/server.json`, { encoding: "UTF-8" });
+        const CONFIGURATION_FILE: string|Buffer = await FileSystem.readFile(`${System.RootDirectory}/build/resources/configuration/server.json`, { encoding: "UTF-8" });
 
         let configuration: ServerConfiguration = {
             port: 443
@@ -90,8 +89,6 @@ class Server extends HTTPSServer
 
     private async dispatchRequest(request: Request, response: ServerResponse): Promise<void>
     {
-        const __DIRNAME__ = await System.GetRootDirectory();
-        
         const ROUTER: Routing = new Routing();
 
         await ROUTER.loadRoutingFile();
@@ -146,7 +143,7 @@ class Server extends HTTPSServer
         
         if (controller_name === undefined || action_name === undefined)
         {
-            const PUBLIC_PATH: string = `${__DIRNAME__}/www`;
+            const PUBLIC_PATH: string = `${System.RootDirectory}/www`;
             
             try
             {
@@ -171,7 +168,7 @@ class Server extends HTTPSServer
         {
             try
             {
-                const CLASS_PATH: string = `${__DIRNAME__}/build/main/Controller/${controller_name}.js`;
+                const CLASS_PATH: string = `${System.RootDirectory}/build/main/Controller/${controller_name}.mjs`;
                 const FILE_STATS: Stats = await FileSystem.stat(CLASS_PATH);
 
                 if (!FILE_STATS.isFile())
