@@ -4,7 +4,7 @@
     "description": "",
     "main": "build/main/app.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "build": "./build.sh"
     },
     "repository": {
         "type": "git",
@@ -18,6 +18,9 @@
     "homepage": "https://github.com/SmashingQuasar/NodeHTTP#readme",
     "type": "module",
     "devDependencies": {
-        "@types/node": "^12.12.6"
+        "@types/node": "^16"
+    },
+    "dependencies": {
+        "mysql2": "^2"
     }
 }
