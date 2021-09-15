@@ -62,26 +62,18 @@ class Server extends HTTPSServer
      */
     public async start(): Promise<void>
     {
-        const CONFIGURATION_FILE: string|Buffer = await FileSystem.readFile(`${System.RootDirectory}/build/resources/configuration/server.json`, { encoding: "UTF-8" });
+        const CONFIGURATION_FILE: string = await FileSystem.readFile(`${System.RootDirectory}/build/resources/configuration/server.json`, { encoding: "utf-8" });
 
         let configuration: ServerConfiguration = {
             port: 443
         };
 
-        if (CONFIGURATION_FILE instanceof Buffer)
-        {
-            // TODO
-        }
-        else
-        {
-            configuration = JSON.parse(CONFIGURATION_FILE);
+        configuration = JSON.parse(CONFIGURATION_FILE);
 
-            if (configuration.port !== undefined)
-            {
-                this.port = configuration.port;
-            }
+        if (configuration.port !== undefined)
+        {
+            this.port = configuration.port;
         }
-
 
         this.listen(this.port);
         console.log("Server started.");

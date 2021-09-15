@@ -18,7 +18,8 @@
 		"allowUnreachableCode": false,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
-		"newLine": "LF"
+		"newLine": "LF",
+		"moduleResolution": "node"
 	},
 	"include": [
 		"./"

@@ -33,7 +33,7 @@ class View
                 throw new Error(`Requested layout ${this.layout} is not a file.`);
             }
 
-            let content: Buffer|string = await FileSystem.readFile(`${this.publicDirectory}/${this.layout}`, { encoding: "UTF-8" });
+            let content: Buffer|string = await FileSystem.readFile(`${this.publicDirectory}/${this.layout}`, { encoding: "utf-8" });
 
             if (typeof content === "string" && content.match(/{{main}}/) !== null)
             {
