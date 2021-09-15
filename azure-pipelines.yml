@@ -8,7 +8,7 @@ trigger:
 - development
 
 pool:
-  vmImage: debian-latest
+  vmImage: ubuntu-latest
 
 steps:
 - task: NodeTool@0
