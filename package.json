@@ -4,7 +4,9 @@
     "description": "",
     "main": "build/main/app.js",
     "scripts": {
-        "build": "./build.sh"
+        "build": "./build.sh",
+        "lint": "yarn run eslint src",
+        "start": "NODE_PATH=./build node ./build/main/app.mjs"
     },
     "repository": {
         "type": "git",
@@ -18,7 +20,15 @@
     "homepage": "https://github.com/SmashingQuasar/NodeHTTP#readme",
     "type": "module",
     "devDependencies": {
-        "@types/node": "^16"
+        "@types/node": "^16",
+        "@typescript-eslint/eslint-plugin": "^4.31.1",
+        "@typescript-eslint/parser": "^4.31.1",
+        "eslint": "^7.32.0",
+        "eslint-plugin-import": "^2.24.2",
+        "eslint-plugin-no-null": "^1.0.2",
+        "eslint-plugin-prefer-arrow": "^1.2.3",
+        "ts-node": "^10.2.1",
+        "typescript": "^4.4.3"
     },
     "dependencies": {
         "mysql2": "^2"

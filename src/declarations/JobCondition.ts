@@ -1,5 +1,7 @@
-declare interface JobCondition
+interface JobCondition
 {
-    property: string;
-    value: string|number|boolean;
+	property: string;
+	value: string|number|boolean;
 }
+
+export { JobCondition };

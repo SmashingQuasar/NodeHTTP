@@ -1,4 +1,6 @@
-declare interface QueryParameter
+interface QueryParameter
 {
-    [name: string]: string;
+	[name: string]: string;
 }
+
+export { QueryParameter };

@@ -1,21 +1,25 @@
-import { Server } from "./Model/Server.js";
-import { System } from "./Model/System.js";
-import { promises as Reader } from "fs";
+import { Kernel } from "./System/Kernel.js";
 
-async function initialize()
-{
-    await System.Start();
-    let key = await Reader.readFile(`${System.RootDirectory}/build/resources/privateKey.key`);
-    let cert = await Reader.readFile(`${System.RootDirectory}/build/resources/certificate.crt`);
-    
-    let options = {
-        key: key,
-        cert: cert
-    };
-    const SERVER = new Server(options, undefined);
-    SERVER.addListener("request", SERVER.handleRequest);
+const KERNEL: Kernel = await Kernel.Create();
 
-    SERVER.start();
-}
+await KERNEL.start();
 
-initialize();
+/*
+const KEY: Buffer = await Reader.readFile(`${System.RootDirectory}/build/resources/privateKey.key`);
+const CERT: Buffer = await Reader.readFile(`${System.RootDirectory}/build/resources/certificate.crt`);
+
+const OPTIONS = {
+	key: KEY,
+	cert: CERT
+};
+const SERVER: Server = new Server(OPTIONS, undefined);
+
+SERVER.addListener(
+	"request",
+	async (message: IncomingMessage, response: ServerResponse): Promise<void> =>
+	{
+		await SERVER.handleRequest(message, response);
+	}
+);
+await SERVER.start();
+*/

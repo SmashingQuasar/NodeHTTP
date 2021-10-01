@@ -1,6 +1,8 @@
-declare interface StandardAjaxResponse
+interface StandardAjaxResponse
 {
-    success: boolean;
-    message: string;
-    data?: Record<string, any>;
+	success: boolean;
+	message: string;
+	data?: Record<string, unknown>;
 }
+
+export { StandardAjaxResponse };

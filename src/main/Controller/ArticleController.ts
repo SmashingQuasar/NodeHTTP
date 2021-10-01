@@ -1,56 +1,49 @@
-import { Controller } from "../Model/Controller.js";
-import { Request } from "../Model/Request.js";
-import { ServerResponse } from "http";
+import type { Response } from "../Web/Server/Response.js";
 import { Templating } from "../Model/Templating.js";
-import { createGzip } from "zlib";
+import type { Context } from "../Web/Context.js";
+/* eslint-disable class-methods-use-this */
 
-class ArticleController extends Controller
+class ArticleController
 {
-    /**
-     * constructor
-     */
-    public constructor()
-    {
-        super();
-    }
+	/**
+	 * defaultAction
+	 */
+	public async defaultAction(context: Context): Promise<void>
+	{
+		let message: string = `Hello world!
+		<br />
+		Everything seems to be working.
+		Received variables: `;
 
-    /**
-     * defaultAction
-     */
-    public async defaultAction(request: Request, response: ServerResponse): Promise<void>
-    {
-        let message: string = `Hello world!
-        <br />
-        Everything seems to be working.
-        Received variables: `;
+		const VARIABLE_NAMES: Array<string> = Object.keys(context.getRequest().getQuery());
 
-        let variables_names = Object.keys(request.getQuery());
+		VARIABLE_NAMES.forEach(
+			(name: string) =>
+			{
+				const VALUE: string|Array<string>|undefined = context.getRequest().getQuery()[name];
 
-        await Promise.all(
-            variables_names.map(
-                (name: string): void => {
-                    message += `<br />${name}: ${request.getQuery()[name]}`
-                }
-            )
-        );
+				if (typeof VALUE === "string")
+				{
+					message += `<br />${name}: ${VALUE}`;
+				}
+			}
+		);
 
-        console.log(message);
+		console.log(message);
 
-        const TEMPLATING: Templating = new Templating();
-        let content: string|null = await TEMPLATING.render(`index.html`, { title: "Hello world from templating!" });
+		const TEMPLATING: Templating = new Templating();
+		const CONTENT: string|undefined = await TEMPLATING.render("index.html", { title: "Hello world from templating!" });
 
-        response.setHeader("Content-Type", "text/html");
-        response.setHeader("Content-Encoding", "gzip");
+		const RESPONSE: Response = context.getResponse();
 
-        const encoder = createGzip();
-        encoder.pipe(response);
-        encoder.write(content);
-        encoder.end();
+		RESPONSE.setHeader("Content-Type", "text/html");
 
-        // response.write(content);
+		RESPONSE.send(CONTENT);
 
-        // response.end();
-    }
+		// response.write(content);
+
+		// response.end();
+	}
 }
 
 export { ArticleController };

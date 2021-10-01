@@ -3,7 +3,6 @@
 		"outDir": "build",
 		"allowJs": false,
 		"target": "esnext",
-		"lib": ["dom", "es5", "es6", "es7"],
 		"alwaysStrict": true,
 		"removeComments": true,
 		"strict": true,
@@ -19,7 +18,22 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"newLine": "LF",
-		"moduleResolution": "node"
+		"moduleResolution": "node",
+		"useUnknownInCatchVariables": true,
+		"lib": ["ESNext"],
+		"noUncheckedIndexedAccess": true,
+		"strictPropertyInitialization": true,
+		"strictBindCallApply": true,
+		"baseUrl": "src/",
+		"forceConsistentCasingInFileNames": true,
+		"listFiles": false,
+		"listEmittedFiles": true,
+		"noErrorTruncation": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitOverride": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"pretty": true,
+		"sourceMap": true
 	},
 	"include": [
 		"./"

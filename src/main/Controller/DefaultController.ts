@@ -1,81 +1,67 @@
-import { Controller } from "../Model/Controller.js";
-import { Request } from "../Model/Request.js";
-import { ServerResponse } from "http";
-import { createGzip } from "zlib";
-import { JobHandler } from "./../Model/JobHandler.js";
-import { System } from "../Model/System.js";
-import { Configuration } from "../Model/Configuration.js";
+// import type { ServerResponse } from "http";
+// import { createGzip } from "zlib";
+// import type { Gzip } from "zlib";
+// import { Controller } from "../Model/Controller.js";
+import type { Response } from "../Web/Server/Response.js";
+import type { Context } from "../Web/Context.js";
+// import type { Request } from "../Web/Client/Request.js";
+import { Templating } from "../Model/Templating.js";
+// import { System } from "../Model/System.js";
+// import { Configuration } from "../Model/Configuration.js";
+// import { JobHandler } from "./../Model/JobHandler.js";
+/* eslint-disable class-methods-use-this */
 
-class DefaultController extends Controller
+class DefaultController
 {
-    /**
-     * constructor
-     */
-    public constructor()
-    {
-        super();
-    }
+	/**
+	 * defaultAction
+	 */
+	public async defaultAction(context: Context): Promise<void>
+	{
+		// console.log(this);
 
-    /**
-     * defaultAction
-     */
-    public async defaultAction(request: Request, response: ServerResponse): Promise<void>
-    {
-        
-        try
-        {
-            const JOB_HANDLER: JobHandler = new JobHandler();
-            await JOB_HANDLER.initialize();
-    
-            const JOBS: Array<JobConfiguration> = await Configuration.Load("jobs");
-    
-            JOBS.forEach(
-                (configuration: JobConfiguration): void => {
-                    JOB_HANDLER.register(configuration);
-                }
-            );
-    
-            JOB_HANDLER.startAll();
-        }
-        catch(error)
-        {
-            System.Logger.logError(error);
-        }
-        console.log(`Received request:`);
-        console.log(request);
-        // let message: string = `Hello world!
-        // <br />
-        // Everything seems to be working.
-        // Received variables: `;
+		// console.log("Received request:");
+		// console.log(context.getRequest());
+		// const MESSAGE: string = `Hello world!
+		// <br />
+		// Everything seems to be working.
+		// Received variables: `;
+/*
+		const VARIABLES_NAMES = Object.keys(request.getQuery());
 
-        // let variables_names = Object.keys(request.getQuery());
+		await Promise.all(
+			VARIABLES_NAMES.map(
+				(name: string): string =>
+				{
+					const VALUE: string|Array<string>|undefined = request.getQuery()[name];
 
-        // await Promise.all(
-        //     variables_names.map(
-        //         (name: string): void => {
-        //             message += `<br />${name}: ${request.getQuery()[name]}`
-        //         }
-        //     )
-        // );
+					if (typeof VALUE === "string")
+					{
+						message += `<br />${name}: ${VALUE}`;
+					}
 
-        // console.log(message);
+					return name;
+				}
+			)
+		);
+*/
+		// console.log(MESSAGE);
+		const TEMPLATING: Templating = new Templating();
+		const CONTENT: string|undefined = await TEMPLATING.render("index.html", { title: "Hello world from templating!" });
+		// let content: string|undefined = await TEMPLATING.render("views/index.html");
 
-        // const TEMPLATING: Templating = new Templating();
-        // let content: string|null = await TEMPLATING.render(`views/index.html`, { title: "Hello world from templating!" });
-        // let content: string|null = await TEMPLATING.render(`views/index.html`);
+		// console.log(CONTENT);
 
-        response.setHeader("Content-Type", "text/html");
-        response.setHeader("Content-Encoding", "gzip");
+		const RESPONSE: Response = context.getResponse();
 
-        const encoder = createGzip();
-        encoder.pipe(response);
-        encoder.write("Job done.");
-        encoder.end();
+		RESPONSE.setHeader("Content-Type", "text/html");
 
-        // response.write(content);
+		RESPONSE.end(CONTENT);
 
-        // response.end();
-    }
+		// response.write(content);
+
+		// response.end();
+	}
 }
 
 export { DefaultController };

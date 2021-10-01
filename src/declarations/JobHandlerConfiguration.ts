@@ -1,5 +1,7 @@
-declare interface JobHandlerConfiguration
+interface JobHandlerConfiguration
 {
-    mainDomain: string;
-    tableName: string;
+	mainDomain: string;
+	tableName: string;
 }
+
+export { JobHandlerConfiguration };

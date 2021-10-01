@@ -1,0 +1,6 @@
+{
+	"defaultLogDirectory": "",
+	"defaultLogName": "",
+	"startHTTPSServer": true,
+	"startWebSocket": false
+}

@@ -1,72 +1,74 @@
-import { promises as FileSystem, Stats } from "fs";
+import { promises as FileSystem } from "fs";
+import type { Stats } from "fs";
+import type { QueryParameter } from "../../declarations/QueryParameter.js";
+import { Kernel } from "../System/Kernel.js";
 import { Templating } from "./Templating.js";
-import { System } from "./System.js";
 
 class View
 {
-    protected layout: string|null = null;
-    protected content: string = "";
-    protected parameters: any;
-    protected publicDirectory: string = "";
-    
-    /**
-     * constructor
-     */
-    public constructor(parameters?: any)
-    {
-        this.parameters = parameters;
-    }
+	protected layout: string|undefined = undefined;
+	protected content: string = "";
+	protected parameters: QueryParameter = {};
+	protected publicDirectory: string = "";
 
-    /**
-     * build
-     */
-    public async build()
-    {
-        this.publicDirectory = `${System.RootDirectory}/www`;
-        
-        if (this.layout !== null && this.layout !== "")
-        {
-            const STATS: Stats = await FileSystem.stat(`${this.publicDirectory}/${this.layout}`);
+	/**
+	 * constructor
+	 */
+	public constructor(parameters: QueryParameter = {})
+	{
+		this.parameters = parameters;
+	}
 
-            if (STATS.isFile() === false)
-            {
-                throw new Error(`Requested layout ${this.layout} is not a file.`);
-            }
+	/**
+	 * build
+	 */
+	public async build(): Promise<void>
+	{
+		this.publicDirectory = `${Kernel.GetRootDirectory()}/www`;
 
-            let content: Buffer|string = await FileSystem.readFile(`${this.publicDirectory}/${this.layout}`, { encoding: "utf-8" });
+		if (this.layout !== undefined && this.layout !== "")
+		{
+			const STATS: Stats = await FileSystem.stat(`${this.publicDirectory}/${this.layout}`);
 
-            if (typeof content === "string" && content.match(/{{main}}/) !== null)
-            {
-                content = content.replace(/{{main}}/, this.content);
-                this.content = content;
-            }
-        }
-    }
+			if (!STATS.isFile())
+			{
+				throw new Error(`Requested layout ${this.layout} is not a file.`);
+			}
 
-    /**
-     * include
-     */
-    public async include(path: string)
-    {
-        const TEMPLATING: Templating = new Templating();
-        this.content += await TEMPLATING.render(path, this.parameters);
-    }
+			let content: string = await FileSystem.readFile(`${this.publicDirectory}/${this.layout}`, { encoding: "utf-8" });
 
-    /**
-     * render
-     */
-    public async render(): Promise<string>
-    {
-        return this.content;
-    }
+			if (content.includes("{{main}}"))
+			{
+				content = content.replace("{{main}}", this.content);
+				this.content = content;
+			}
+		}
+	}
 
-    /**
-     * getContent
-     */
-    public getContent(): string
-    {
-        return this.content;    
-    }
+	/**
+	 * include
+	 */
+	public async include(path: string): Promise<void>
+	{
+		const TEMPLATING: Templating = new Templating();
+		this.content += await TEMPLATING.render(path, this.parameters);
+	}
+
+	/**
+	 * render
+	 */
+	public async render(): Promise<string>
+	{
+		return await Promise.resolve(this.content);
+	}
+
+	/**
+	 * getContent
+	 */
+	public getContent(): string
+	{
+		return this.content;
+	}
 }
 
 export { View };

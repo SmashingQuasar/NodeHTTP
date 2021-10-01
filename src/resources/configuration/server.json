@@ -1,3 +1,6 @@
 {
-    "port": 8080
+	"httpPort": 8080,
+	"wsPort": 9123,
+	"certificate": "/build/resources/certificate.crt",
+	"key": "/build/resources/privateKey.key"
 }

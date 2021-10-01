@@ -1,5 +1,7 @@
-declare interface PimcoreConfiguration
+interface PimcoreConfiguration
 {
-    mainDomain: string;
-    tableName: string;
+	mainDomain: string;
+	tableName: string;
 }
+
+export { PimcoreConfiguration };
