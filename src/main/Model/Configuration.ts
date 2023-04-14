@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
-import { Kernel } from "../System/Kernel.js";
-import { FileSystem } from "./FileSystem.js";
+// import { Kernel } from "../System/Kernel.js";
+import { FileSystem } from "../System/FileSystem.js";
 
 class Configuration
 {
@@ -9,9 +9,8 @@ class Configuration
 	 */
 	public static async Load<T extends Record<string, unknown>>(name: string): Promise<T>
 	{
-		const ROOT_DIR: string = Kernel.GetRootDirectory();
+		const ROOT_DIR: string = await FileSystem.ComputeRootDirectory();
 		const FILEPATH: string = `${ROOT_DIR}/build/resources/configuration/${name}.json`;
-		console.log(FILEPATH);
 		const FILE_EXISTS: boolean = await FileSystem.FileExists(FILEPATH);
 
 		if (!FILE_EXISTS)
@@ -21,7 +20,7 @@ class Configuration
 
 		try
 		{
-			const FILE: string = await fs.readFile(`${Kernel.GetRootDirectory()}/build/resources/configuration/${name}.json`, { encoding: "utf-8" });
+			const FILE: string = await fs.readFile(`${ROOT_DIR}/build/resources/configuration/${name}.json`, { encoding: "utf-8" });
 			const CONFIGURATION: T = JSON.parse(FILE) as T;
 
 			return CONFIGURATION;

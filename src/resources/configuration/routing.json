@@ -1,21 +1,114 @@
 [
     {
-        "name": "Default",
-        "regexp": "^/?$",
-        "pretty": "/",
-        "controller": "Default",
+        "name": "ApiGlobal",
+        "regexp": "^/api/?$",
+        "pretty": "/api",
+        "controller": "Api",
         "action": "default",
         "variables": {}
     },
     {
-        "name": "MyRouteName",
-        "regexp": "^/articles/([0-9]+)-([^/]+)/?",
-        "pretty": "/articles/$1$2",
-        "controller": "Article",
-        "action": "default",
+        "name": "Authenticate",
+        "regexp": "^/api/authenticate/?$",
+        "pretty": "/api/authenticate",
+        "controller": "Api",
+        "action": "authenticate",
+        "variables": {}
+    },
+    {
+        "name": "CreateRegionalBureau",
+        "regexp": "^/api/regional-bureau/create/?$",
+        "pretty": "/api/regional-bureau/create",
+        "controller": "Api",
+        "action": "createRegionalBureau",
+        "variables": {}
+    },
+    {
+        "name": "UpdateRegionalBureau",
+        "regexp": "^/api/regional-bureau/update/?$",
+        "pretty": "/api/regional-bureau/update",
+        "controller": "Api",
+        "action": "updateRegionalBureau",
+        "variables": {}
+    },
+    {
+        "name": "GetRegionalBureau",
+        "regexp": "^/api/regional-bureau/([0-9]+)/?$",
+        "pretty": "/api/regional-bureau/$1",
+        "controller": "Api",
+        "action": "getRegionalBureau",
         "variables": {
-            "id": "$1",
-            "prettyKey": "$2"
+            "id": "$1"
         }
+    },
+    {
+        "name": "GetRegionalBureauDistricts",
+        "regexp": "^/api/regional-bureau/([0-9]+)/districts/?$",
+        "pretty": "/api/regional-bureau/$1/districts",
+        "controller": "Api",
+        "action": "getRegionalBureauDistricts",
+        "variables": {
+            "id": "$1"
+        }
+    },
+    {
+        "name": "CreateDistrict",
+        "regexp": "^/api/district/create/?$",
+        "pretty": "/api/district/create",
+        "controller": "Api",
+        "action": "createDistrict",
+        "variables": {}
+    },
+    {
+        "name": "UpdateDistrict",
+        "regexp": "^/api/district/update/?$",
+        "pretty": "/api/district/update",
+        "controller": "Api",
+        "action": "updateDistrict",
+        "variables": {}
+    },
+    {
+        "name": "GetDistrict",
+        "regexp": "^/api/district/([0-9]+)/?$",
+        "pretty": "/api/district/$1",
+        "controller": "Api",
+        "action": "getDistrict",
+        "variables": {
+            "id": "$1"
+        }
+    },
+    {
+        "name": "CreateApplicant",
+        "regexp": "^/api/applicant/create/?$",
+        "pretty": "/api/applicant/create",
+        "controller": "Api",
+        "action": "createApplicant",
+        "variables": {}
+    },
+    {
+        "name": "GetAllApplicants",
+        "regexp": "^/api/applicant/?$",
+        "pretty": "/api/applicant",
+        "controller": "Api",
+        "action": "getAllApplicants",
+        "variables": {}
+    },
+    {
+        "name": "GetApplicant",
+        "regexp": "^/api/applicant/([0-9]+)/?$",
+        "pretty": "/api/applicant/$1",
+        "controller": "Api",
+        "action": "getApplicant",
+        "variables": {
+            "id": "$1"
+        }
+    },
+    {
+        "name": "ConvertGeoJSON",
+        "regexp": "^/api/convert-geo-json/?$",
+        "pretty": "/api/convert-geo-json",
+        "controller": "Api",
+        "action": "convertGeoJSON",
+        "variables": {}
     }
 ]

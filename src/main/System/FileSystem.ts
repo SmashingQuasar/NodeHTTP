@@ -1,6 +1,7 @@
-import type { Stats } from "fs";
+import type { Stats, Dirent } from "fs";
+import { type as os_type } from "os";
 import { promises as fs } from "fs";
-import type { FileSystemError } from "../../declarations/FileSystemError.js";
+import type { FileSystemError } from "./FileSystem/FileSystemError.js";
 // import { Logger } from "./Logger.js";
 // import { System } from "./System.js";
 
@@ -14,6 +15,39 @@ class FileSystem
 		/* eslint-disable-next-line */
 		// @ts-ignore
 		return (error instanceof Error) && (typeof error.code === "string");
+	}
+
+	/**
+	 * ComputeRootDirectory
+	 */
+	public static async ComputeRootDirectory(): Promise<string>
+	{
+		let dirname: string = "";
+		const OS_TYPE: string = os_type();
+
+		if (OS_TYPE === "Linux")
+		{
+			dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^/]+$/, "/$1");
+		}
+
+		if (OS_TYPE === "Windows_NT")
+		{
+			dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]:(.*)\/[^/]+$/, "$1");
+		}
+
+		if (OS_TYPE === "Darwin")
+		{
+			throw new Error("Darwin Operating System file system is not yet handled.");
+		}
+
+		if (dirname === "")
+		{
+			throw new Error("Unrecognized operating system.");
+		}
+
+		dirname = await fs.realpath(`${dirname}/../../../`);
+
+		return dirname;
 	}
 
 	/**
@@ -116,6 +150,14 @@ class FileSystem
 		const FILE: fs.FileHandle = await fs.open(file_path, flags);
 
 		return FILE;
+	}
+
+	/**
+	 * ReadDirectory
+	 */
+	public static async ReadDirectory(directory: string): Promise<Array<Dirent>>
+	{
+		return await fs.readdir(directory, { encoding: "utf-8", withFileTypes: true });
 	}
 }
 

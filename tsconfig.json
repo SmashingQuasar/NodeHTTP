@@ -13,7 +13,7 @@
 		"strictNullChecks": true,
 		"strictFunctionTypes": true,
 		"allowUnusedLabels": false,
-		"module": "ESNext",
+		"module": "esnext",
 		"allowUnreachableCode": false,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,

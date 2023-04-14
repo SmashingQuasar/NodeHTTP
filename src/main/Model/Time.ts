@@ -1,3 +1,4 @@
+import { Millisecond } from "../../declarations/Millisecond.js";
 import { TimeFormatting } from "../../declarations/TimeFormatting.js";
 
 class Time extends Date
@@ -25,6 +26,17 @@ class Time extends Date
 		output = output.replace(/s/g, RAW_SECONDS.toString().padStart(TimeFormatting.DEFAULT_PAD_LENGTH, "0"));
 
 		return output;
+	}
+
+	/**
+	 * getDaysBetween
+	 */
+	public getNumberOfDaysBetween(date: Date): number
+	{
+		const MILLISECONDS_DIFFERENCE: number = this.getTime() - date.getTime();
+		const DIFFERENCE: number = MILLISECONDS_DIFFERENCE / Millisecond.DAY;
+
+		return Math.round(DIFFERENCE);
 	}
 }
 

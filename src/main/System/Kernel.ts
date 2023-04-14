@@ -1,13 +1,9 @@
-import { type as os_type } from "os";
-import { promises as FileSystem } from "fs";
-// import type { ServerOptions } from "https";
-// import type { IncomingMessage, ServerResponse } from "http";
-// import type { ServerConfiguration } from "../../declarations/ServerConfiguration.js";
-// import type { HTTPServerConfiguration } from "../../declarations/HTTPServerConfiguration.js";
 import { Server } from "../Web/Server.js";
 import { Logger } from "../Model/Logger.js";
 import { Configuration } from "../Model/Configuration.js";
+import { FileSystem } from "./FileSystem.js";
 import type { KernelConfigurationInterface } from "./Kernel/KernelConfigurationInterface.js";
+import { Database } from "./Database.js";
 
 class Kernel
 {
@@ -17,6 +13,7 @@ class Kernel
 	private readonly logger: Logger;
 	private configuration: KernelConfigurationInterface;
 	private httpsServer: Server|undefined;
+	private db: Database|undefined;
 
 	private constructor()
 	{
@@ -52,6 +49,8 @@ class Kernel
 
 			instance.getLogger().initialize();
 		}
+
+		instance.db = await Database.Create();
 
 		return instance;
 	}
@@ -122,18 +121,7 @@ class Kernel
 	 */
 	public async initializeRootDirectory(): Promise<void>
 	{
-		let dirname: string = "";
-
-		if (os_type() === "Linux")
-		{
-			dirname = import.meta.url.replace(/^file:\/\/\/(.*)\/[^/]+$/, "/$1");
-		}
-		else
-		{
-			dirname = import.meta.url.replace(/^file:\/\/\/[A-Z]:(.*)\/[^/]+$/, "$1");
-		}
-
-		this.rootDirectory = await FileSystem.realpath(`${dirname}/../../../`);
+		this.rootDirectory = await FileSystem.ComputeRootDirectory();
 	}
 
 	/**
@@ -192,6 +180,19 @@ class Kernel
 	public getHTTPSServer(): Server|undefined
 	{
 		return this.httpsServer;
+	}
+
+	/**
+	 * getDb
+	 */
+	public async getDb(): Promise<Database>
+	{
+		if (this.db === undefined)
+		{
+			this.db = await Database.Create();
+		}
+
+		return this.db;
 	}
 
 	private setConfiguration(configuration: KernelConfigurationInterface): void

@@ -1,0 +1,30 @@
+version: "3.7"
+
+services:
+  application:
+    container_name: vitruvius
+    hostname: vitruvius
+    build:
+        context: ./nodehttp
+        dockerfile: Dockerfile
+    image: smashing-quasar/vitruvius
+    working_dir: /home/node/vitruvius
+    volumes:
+      - "../:/home/node/vitruvius"
+    # tty: true
+    # stdin_open: true
+    # ports:
+    #   - 443:443
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.vitruvius.rule=Host(`vitruvius.relic-hunters.eu`)
+      - traefik.http.routers.vitruvius.entrypoints=https
+      - traefik.http.routers.vitruvius.tls=true
+      - traefik.http.routers.vitruvius.tls.certresolver=default
+      - traefik.http.services.vitruvius.loadbalancer.server.port=443
+      - traefik.http.services.vitruvius.loadbalancer.server.scheme=https
+    networks:
+      - traefik_proxy
+networks:
+  traefik_proxy:
+    external: true

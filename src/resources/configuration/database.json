@@ -1,6 +1,6 @@
 {
-    "socketPath": "/var/run/mysqld/mysqld.sock",
-    "user": "dev-kiosque-fae",
-    "password": "",
-    "database": "dev_kiosque_fae"
+	"socketPath": "/var/run/mysqld/mysqld.sock",
+	"user": "parti_animaliste",
+	"password": "root",
+	"database": "parti_animaliste"
 }

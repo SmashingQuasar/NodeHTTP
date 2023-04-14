@@ -5,7 +5,7 @@ echo "Deleting build folder"
 rm -rf build
 
 echo "Building TypeScript"
-tsc
+yarn run tsc
 echo "TypeScript successfully built"
 
 echo "Converting .js files to .mjs"

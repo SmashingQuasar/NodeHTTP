@@ -1,14 +1,26 @@
 import type { ParsedUrlQuery } from "querystring";
-import { FileSystem } from "../Model/FileSystem.js";
+import type { Dirent } from "fs";
+// import { Module } from "module";
+import { TypeGuard } from "../Validation/TypeGuard.js";
+import { FileSystem } from "../System/FileSystem.js";
 import { Kernel } from "../System/Kernel.js";
 import { Routing } from "../Model/Routing.js";
+import { Logger } from "../Model/Logger.js";
 import type { RouteConfiguration } from "../../declarations/RouteConfiguration.js";
+import { BaseEndpoint } from "../Endpoints/BaseEndpoint.js";
 import { HTTPStatusCodeEnum } from "./HTTP/HTTPStatusCodeEnum";
 import type { Context } from "./Context.js";
 import type { Request } from "./Client/Request.js";
 
+interface ConstructorOf<ClassName>
+{
+	/* eslint-disable-next-line @typescript-eslint/prefer-function-type */
+	new(...args: Array<unknown>): ClassName;
+}
+
 class Dispatcher
 {
+	private static ENDPOINTS: Array<ConstructorOf<BaseEndpoint>> = [];
 	private readonly context: Context;
 
 	private constructor(context: Context)
@@ -24,6 +36,95 @@ class Dispatcher
 		const DISPATCHER: Dispatcher = new Dispatcher(context);
 
 		return DISPATCHER;
+	}
+
+	/**
+	 * static GetEndpoints
+	 */
+	public static GetEndpoints(): Array<ConstructorOf<BaseEndpoint>>
+	{
+		return this.ENDPOINTS;
+	}
+
+	/**
+	 * RegisterEndpoints
+	 */
+	public static async RegisterEndpoints(): Promise<void>
+	{
+		const ROOT_DIRECTORY: string = await FileSystem.ComputeRootDirectory();
+
+		this.ENDPOINTS = await Dispatcher.ParseDirectoryForEndpoints(`${ROOT_DIRECTORY}/build/main/Endpoints`);
+
+		console.log(this.ENDPOINTS);
+	}
+
+	private static IsConstructorOfBaseEndpoint(value: unknown): value is ConstructorOf<BaseEndpoint>
+	{
+		return value instanceof Function && value.prototype instanceof BaseEndpoint;
+	}
+
+	private static async ParseDirectoryForEndpoints(directory: string): Promise<Array<ConstructorOf<BaseEndpoint>>>
+	{
+		const CONTENTS: Array<Dirent> = await FileSystem.ReadDirectory(directory);
+		const ENDPOINTS: Array<ConstructorOf<BaseEndpoint>> = [];
+
+		for (const ENTITY of CONTENTS)
+		{
+			const FILEPATH: string = `${directory}/${ENTITY.name}`;
+
+			if (ENTITY.isDirectory())
+			{
+				ENDPOINTS.concat(await Dispatcher.ParseDirectoryForEndpoints(FILEPATH));
+			}
+			else if (ENTITY.isFile())
+			{
+				if (ENTITY.name.endsWith(".mjs") && !ENTITY.name.endsWith(".spec.mjs"))
+				{
+					console.log(`Loading file: "${FILEPATH}".`);
+
+					try
+					{
+						const CONTENT: unknown = await import(FILEPATH);
+
+						if (TypeGuard.IsRecord(CONTENT))
+						{
+							const KEY: string = ENTITY.name.replace(/\..*$/, "");
+							console.log(`KEY: ${KEY}`);
+
+							if (TypeGuard.IsString(KEY))
+							{
+								const EXPORT: unknown = CONTENT[KEY];
+
+								console.log("Found export");
+
+								if (Dispatcher.IsConstructorOfBaseEndpoint(EXPORT))
+								{
+									console.log("Export is base endpoint");
+									ENDPOINTS.push(EXPORT);
+								}
+							}
+						}
+					}
+					catch (error: unknown)
+					{
+						console.log(`Error with file: "${FILEPATH}".`);
+
+						if (error instanceof Error)
+						{
+							const LOGGER: Logger = new Logger();
+
+							await LOGGER.logError(error);
+						}
+						else
+						{
+							console.log("Something threw a literal!: ", error);
+						}
+					}
+				}
+			}
+		}
+
+		return ENDPOINTS;
 	}
 
 	/**
@@ -162,6 +263,15 @@ class Dispatcher
 			catch (error: unknown)
 			{
 				console.log(error);
+
+				let message: string = "An error occured.";
+
+				if (error instanceof Error)
+				{
+					message = `An error occured: "${error.message}"`;
+				}
+
+				this.context.getResponse().send(message);
 			}
 		}
 	}

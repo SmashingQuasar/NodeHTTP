@@ -3,7 +3,7 @@ import type { ServerOptions } from "https";
 import { Server as HTTPSServer } from "https";
 import { Kernel } from "../System/Kernel.js";
 import { Configuration } from "../Model/Configuration.js";
-import { FileSystem } from "../Model/FileSystem.js";
+import { FileSystem } from "../System/FileSystem.js";
 import { Request } from "./Client/Request.js";
 import { Response } from "./Server/Response.js";
 import { Context } from "./Context.js";
@@ -59,6 +59,8 @@ class Server extends HTTPSServer
 			certificate_path = `${Kernel.GetRootDirectory()}${scoped_configuration.certificate}`;
 			certificate = await FileSystem.ReadFileAsBuffer(certificate_path);
 		}
+
+		// await Dispatcher.RegisterEndpoints();
 
 		const SERVER: Server = new Server(
 			{
